@@ -1,0 +1,328 @@
+// انسخ هذا الكود بالكامل وضعه في محرر Apps Script
+const SHEET_ID = ''; // اتركه فارغاً ليستخدم الشيت الحالي
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const db = getDb();
+  let result = {};
+
+  try {
+    switch(action) {
+      case 'getBooks':
+        result = getData(db.books);
+        break;
+      case 'getSettings':
+        const settingsArr = getData(db.settings);
+        result = settingsArr.reduce((acc, curr) => {
+          acc[curr.key] = curr.value;
+          return acc;
+        }, {});
+        break;
+      case 'getOrders':
+         const orders = getData(db.orders);
+         result = orders.reverse();
+         break;
+      case 'getSlider':
+         result = getData(db.slider);
+         break;
+      default:
+        result = { error: 'Invalid Action' };
+    }
+  } catch (err) {
+    result = { error: err.toString() };
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const action = e.parameter.action;
+  const db = getDb();
+  let result = {};
+  
+  try {
+    const data = JSON.parse(e.postData.contents);
+    
+    switch(action) {
+      // --- الكتب ---
+      case 'addBook':
+        data.id = data.id || new Date().getTime().toString();
+        data.date_added = new Date().toLocaleDateString('en-GB');
+        data.status = parseInt(data.stock) > 0 ? 'متوفر' : 'غير متوفر';
+        addRow(db.books, data);
+        result = { success: true, message: 'تم إضافة الكتاب' };
+        break;
+        
+      case 'updateBook':
+        if(data.stock !== undefined) data.status = parseInt(data.stock) > 0 ? 'متوفر' : 'غير متوفر';
+        updateRow(db.books, 'id', data.id, data);
+        result = { success: true, message: 'تم التحديث' };
+        break;
+        
+      case 'deleteBook':
+        deleteRow(db.books, 'id', data.id);
+        result = { success: true, message: 'تم الحذف' };
+        break;
+
+// --- الطلبات ---
+      case 'placeOrder':
+        // 1. توليد البيانات الأساسية
+        data.order_id = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+        data.date = new Date().toLocaleString('en-GB'); 
+        data.status = 'جديد';
+        data.date_preparing = ''; data.date_shipped = ''; data.date_delivered = ''; data.date_cancelled = '';
+
+        // 2. خصم المخزون
+        if (data.cartData) {
+          const cartItems = JSON.parse(data.cartData);
+          const booksSheet = db.books;
+          const booksData = booksSheet.getDataRange().getValues();
+          const headers = booksData[0];
+          const idIndex = headers.indexOf('id');
+          const stockIndex = headers.indexOf('stock');
+          const statusIndex = headers.indexOf('status');
+
+          cartItems.forEach(item => {
+            for (let i = 1; i < booksData.length; i++) {
+              if (String(booksData[i][idIndex]) === String(item.id)) {
+                let currentStock = parseInt(booksData[i][stockIndex]);
+                let newStock = currentStock - parseInt(item.qty);
+                if (newStock < 0) newStock = 0;
+                booksSheet.getRange(i + 1, stockIndex + 1).setValue(newStock);
+                if (newStock === 0) {
+                   booksSheet.getRange(i + 1, statusIndex + 1).setValue('غير متوفر');
+                }
+                break;
+              }
+            }
+          });
+        }
+
+        // 3. حفظ الطلب في الشيت
+        addRow(db.orders, data);
+
+        // 4. جلب الإعدادات (باستخدام الطريقة المباشرة للصف الرابع)
+        const settingsSheet = db.settings;
+        let siteName = 'Book.com';
+        let contactEmail = '';
+        let supportPhone = '';
+
+        try {
+            // جلب اسم الموقع
+            const allSettings = settingsSheet.getDataRange().getValues();
+            allSettings.forEach(row => {
+                if(String(row[0]) === 'site_name') siteName = row[1];
+                if(String(row[0]) === 'whatsapp') supportPhone = row[1];
+            });
+
+            // قراءة ايميل الإدارة من الصف 4 العمود 2 مباشرة
+            contactEmail = settingsSheet.getRange(4, 2).getValue().toString().trim();
+
+        } catch (e) {
+            console.log("Error reading settings: " + e.toString());
+        }
+
+        // 5. تصميم الإيميل (مع إضافة حقوق المطور في الفوتر)
+        const emailSubject = `🔔 طلب جديد: ${data.order_id} - ${siteName}`;
+        
+        const createEmailBody = (isClient) => {
+            const headerTitle = isClient ? 'تأكيد استلام الطلب' : 'إشعار بطلب جديد';
+            const greeting = isClient ? `مرحباً ${data.customer_name}` : 'تقرير طلب جديد (للإدارة)';
+            
+            // قسم خاص لبيانات العميل يظهر فقط للإدارة
+            let adminCustomerSection = '';
+            if (!isClient) {
+                adminCustomerSection = `
+                <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbdefb;">
+                    <h3 style="margin-top:0; color:#0d47a1; border-bottom: 1px solid #90caf9; padding-bottom: 5px;">👤 بيانات العميل الكاملة</h3>
+                    <table style="width: 100%; font-size: 14px;">
+                        <tr><td style="font-weight:bold; width: 100px;">الاسم:</td><td>${data.customer_name}</td></tr>
+                        <tr><td style="font-weight:bold;">الإيميل:</td><td><a href="mailto:${data.email}">${data.email}</a></td></tr>
+                        <tr><td style="font-weight:bold;">الهاتف:</td><td><a href="tel:${data.phone}">${data.phone}</a></td></tr>
+                        <tr><td style="font-weight:bold;">العنوان:</td><td>${data.address}</td></tr>
+                    </table>
+                </div>`;
+            }
+
+            return `
+              <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                  
+                  <div style="background-color: #1a1a1a; color: #FFD700; padding: 20px; text-align: center;">
+                    <h1 style="margin: 0;">${siteName}</h1>
+                    <p style="margin: 5px 0 0; color: #aaa;">${headerTitle}</p>
+                  </div>
+
+                  <div style="padding: 20px;">
+                    <h2 style="color: #333; text-align: center; margin-bottom: 20px;">${greeting}</h2>
+                    
+                    ${adminCustomerSection}
+
+                    <div style="background-color: #fff; border: 1px solid #eee; border-radius: 8px; padding: 15px;">
+                        <h3 style="margin-top:0; color:#d4af37; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">📦 تفاصيل الطلب (#${data.order_id})</h3>
+                        
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
+                          <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">تاريخ الطلب:</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${data.date}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">المنتجات:</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; line-height: 1.6;">${data.items}</td>
+                          </tr>
+                          ${data.notes ? `
+                          <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-weight: bold;">ملاحظات:</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #d63384;">${data.notes}</td>
+                          </tr>` : ''}
+                          <tr style="background-color: #fffbe6;">
+                            <td style="padding: 15px 10px; font-weight: bold; font-size: 16px; color: #333;">الإجمالي النهائي:</td>
+                            <td style="padding: 15px 10px; font-weight: bold; font-size: 18px; color: #d32f2f;">${data.total_price}</td>
+                          </tr>
+                        </table>
+                    </div>
+
+                    ${isClient ? `
+                    <div style="margin-top: 20px; text-align: center; font-size: 13px; color: #666;">
+                       <p>عنوان الشحن المسجل: ${data.address}</p>
+                       <p>رقم التواصل: ${data.phone}</p>
+                    </div>
+                    <div style="margin-top: 20px; background-color: #f9f9f9; padding: 15px; border-radius: 5px; text-align: center; border: 1px solid #eee;">
+                      <p style="margin: 0; color: #555; font-weight: bold;">لأي استفسار تواصل معنا:</p>
+                      <p style="margin: 5px 0;">📧 ${contactEmail} ${supportPhone ? `| 📱 ${supportPhone}` : ''}</p>
+                    </div>
+                    ` : ''}
+
+                  </div>
+                  
+                  <div style="background-color: #333; color: #777; padding: 15px; text-align: center; font-size: 12px; border-top: 1px solid #444;">
+                    <p style="margin: 0 0 5px 0;">&copy; ${new Date().getFullYear()} ${siteName}. جميع الحقوق محفوظة.</p>
+                    
+                    <p style="margin: 5px 0 0; font-size: 11px; color: #999; display: inline-block;">
+                       Development by <a href="https://ahmed-attia-portfolio-git-main-ahm3d0xs-projects.vercel.app/" target="_blank" style="color: #FFD700; text-decoration: none; font-weight: bold; background-color: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">Ahmed M Attia 💻</a>
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            `;
+        };
+
+        // 6. إرسال الإيميلات
+        try {
+          // للعميل
+          if(data.email && data.email.includes('@')) {
+            MailApp.sendEmail({ to: data.email, subject: `✅ تأكيد الطلب #${data.order_id}`, htmlBody: createEmailBody(true) });
+          }
+          
+          // للإدارة (شامل التفاصيل)
+          if(contactEmail && contactEmail.includes('@')) {
+             MailApp.sendEmail({ to: contactEmail, subject: emailSubject, htmlBody: createEmailBody(false) });
+          }
+        } catch(e) {
+          console.log("Email Error: " + e.toString()); 
+        }
+
+        result = { success: true, message: 'تم استلام الطلب', orderId: data.order_id };
+        break;
+     
+      // --- الإعدادات ---
+      case 'updateSettings':
+          const sSheet = db.settings;
+          if (sSheet.getLastRow() > 1) sSheet.deleteRows(2, sSheet.getLastRow() - 1);
+          for (const [key, value] of Object.entries(data)) {
+             if(key !== 'action') sSheet.appendRow([key, value]);
+          }
+          result = { success: true, message: 'تم الحفظ' };
+          break;
+
+      // --- السلايدر ---
+      case 'addSlider':
+        data.id = new Date().getTime().toString();
+        data.active = 'TRUE';
+        addRow(db.slider, data);
+        result = { success: true, message: 'تم إضافة الشريحة' };
+        break;
+      case 'updateSlider':
+        updateRow(db.slider, 'id', data.id, data);
+        result = { success: true, message: 'تم تحديث الشريحة' };
+        break;
+      case 'deleteSlider':
+        deleteRow(db.slider, 'id', data.id);
+        result = { success: true, message: 'تم حذف الشريحة' };
+        break;
+
+      default:
+        result = { error: 'Invalid Action' };
+    }
+  } catch (err) {
+    result = { error: err.toString() };
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Helpers
+function getDb() {
+  const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+  return {
+    books: ss.getSheetByName('Books'),
+    orders: ss.getSheetByName('Orders'),
+    settings: ss.getSheetByName('Settings'),
+    slider: ss.getSheetByName('Slider')
+  };
+}
+
+function getData(sheet) {
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length === 0) return [];
+  const headers = rows.shift();
+  return rows.map(row => {
+    let obj = {};
+    headers.forEach((header, i) => obj[header] = row[i]);
+    return obj;
+  });
+}
+
+// دالة إضافة صف محسنة لتجنب الأخطاء في ترتيب الأعمدة
+function addRow(sheet, dataObj) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const row = headers.map(header => {
+    // إذا كانت القيمة موجودة نضعها، وإلا نضع نص فارغ لتجنب ترحيل الأعمدة
+    return dataObj[header] !== undefined ? dataObj[header] : '';
+  });
+  sheet.appendRow(row);
+}
+
+function updateRow(sheet, idColName, idValue, dataObj) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const data = sheet.getDataRange().getValues();
+  const idIndex = headers.indexOf(idColName);
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idIndex]) === String(idValue)) {
+      headers.forEach((header, colIndex) => {
+        if (dataObj.hasOwnProperty(header)) sheet.getRange(i + 1, colIndex + 1).setValue(dataObj[header]);
+      });
+      return;
+    }
+  }
+}
+
+function deleteRow(sheet, idColName, idValue) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const data = sheet.getDataRange().getValues();
+  const idIndex = headers.indexOf(idColName);
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idIndex]) === String(idValue)) {
+      sheet.deleteRow(i + 1);
+      return;
+    }
+  }
+}
+
+
+
+function authorizeEmail() {
+  MailApp.getRemainingDailyQuota();
+  console.log("تمت الموافقة بنجاح!");
+}

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | Book.com</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white font-cairo overflow-hidden h-screen">
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4">
+        <div class="glass p-8 rounded-2xl w-full max-w-md text-center border border-white/10 shadow-2xl">
+            <div class="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-6">الدخول للمدير</h2>
+            <input type="password" id="admin-pass" placeholder="كلمة المرور" class="input-field mb-4 text-center text-lg">
+            <button onclick="adminLogin()" class="w-full bg-gold text-black font-bold py-3 rounded-lg hover:bg-yellow-500 transition">دخول</button>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="hidden h-full flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <aside class="w-full md:w-64 bg-[#111] border-l border-white/5 p-4 flex flex-col gap-2 shrink-0 z-20 shadow-xl overflow-y-auto">
+            <div class="text-center mb-6 py-4 border-b border-white/5">
+                <h1 class="text-2xl font-bold text-gold">لوحة الإدارة</h1>
+                <p class="text-xs text-gray-500">نظام إدارة المكتبة v2.3</p>
+            </div>
+            
+            <button onclick="switchTab('add-book')" class="admin-tab-btn active text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-plus-circle text-gold w-6"></i> إضافة كتاب
+            </button>
+            <button onclick="switchTab('inventory')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-boxes text-blue-400 w-6"></i> المخزون
+            </button>
+            <button onclick="switchTab('orders')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-shopping-bag text-green-400 w-6"></i> الطلبات
+            </button>
+            <button onclick="switchTab('slider')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-images text-pink-400 w-6"></i> إدارة العروض
+            </button>
+            <button onclick="switchTab('settings')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-sliders-h text-purple-400 w-6"></i> الإعدادات
+            </button>
+            
+            <div class="mt-auto">
+                <a href="index.html" class="block w-full text-center bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition mb-2">
+                    <i class="fas fa-external-link-alt mr-2"></i> معاينة الموقع
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto bg-dark relative custom-scrollbar">
+            
+            <!-- SECTION: ADD BOOK -->
+            <section id="tab-add-book" class="admin-section max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                    <span class="text-gold">#</span> إضافة كتاب جديد
+                </h2>
+                <form id="add-book-form" class="glass p-6 md:p-8 rounded-2xl space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">عنوان الكتاب</label>
+                            <input type="text" name="title" required class="input-field">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">المؤلف</label>
+                            <input type="text" name="author" required class="input-field">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">التصنيف</label>
+                            <select name="category" required class="input-field bg-[#222]">
+                                <option value="روايات">روايات</option>
+                                <option value="تنمية ذاتية">تنمية ذاتية</option>
+                                <option value="تاريخ">تاريخ</option>
+                                <option value="علوم">علوم</option>
+                                <option value="أطفال">أطفال</option>
+                                <option value="ديني">ديني</option>
+                                <option value="سير ذاتية">سير ذاتية</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">الفئة العمرية</label>
+                            <select name="age_rating" class="input-field bg-[#222]">
+                                <option value="الكل">الكل</option>
+                                <option value="+12">+12</option>
+                                <option value="+16">+16</option>
+                                <option value="+18">+18</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">سنة الإصدار</label>
+                            <input type="number" name="release_date" class="input-field">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/5 p-4 rounded-xl border border-white/5">
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">السعر (ج.م)</label>
+                            <input type="number" name="price" required class="input-field text-gold font-bold">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">الخصم (ج.م)</label>
+                            <input type="number" name="discount" class="input-field text-red-400">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">الكمية بالمخزون</label>
+                            <input type="number" name="stock" required class="input-field text-green-400">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">رابط صورة الغلاف</label>
+                            <input type="text" name="image_url" required class="input-field" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">الوسوم (افصل بينها بـ شرطة - )</label>
+                            <input type="text" name="tags" class="input-field">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-400 mb-1 block">وصف الكتاب</label>
+                            <textarea name="description" class="input-field h-32 resize-none"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-green-700 py-4 rounded-xl font-bold hover:shadow-lg transition">
+                        حفظ وإضافة للمخزون
+                    </button>
+                </form>
+            </section>
+
+            <!-- SECTION: INVENTORY -->
+            <section id="tab-inventory" class="admin-section hidden max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold">إدارة المخزون</h2>
+                    <div class="flex gap-2 w-full max-w-md">
+                        <input type="text" id="inventory-search" placeholder="بحث باسم الكتاب أو المؤلف..." class="input-field w-full">
+                        <button onclick="loadInventory()" class="bg-gold text-black px-4 rounded-lg font-bold hover:bg-yellow-500 whitespace-nowrap">تحديث</button>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse min-w-[700px]">
+                            <thead class="bg-white/5 text-gray-300">
+                                <tr>
+                                    <th class="p-4 border-b border-white/10">الكتاب</th>
+                                    <th class="p-4 border-b border-white/10">السعر</th>
+                                    <th class="p-4 border-b border-white/10">الكمية</th>
+                                    <th class="p-4 border-b border-white/10">التصنيف</th>
+                                    <th class="p-4 border-b border-white/10 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body" class="divide-y divide-white/5 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ORDERS (Table View) -->
+            <section id="tab-orders" class="admin-section hidden max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h2 class="text-3xl font-bold">الطلبات الواردة</h2>
+                    <div class="flex gap-2 w-full max-w-lg">
+                        <div class="relative w-full">
+                            <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="orders-search" placeholder="بحث برقم الاوردر، اسم العميل، الهاتف..." class="input-field w-full pr-10">
+                        </div>
+                        <button onclick="loadOrders()" class="bg-gold text-black px-4 rounded-lg font-bold hover:bg-yellow-500 whitespace-nowrap">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="glass rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right border-collapse min-w-[900px]">
+                            <thead class="bg-white/5 text-gray-300 uppercase text-xs tracking-wider">
+                                <tr>
+                                    <th class="p-4 border-b border-white/10"># الطلب</th>
+                                    <th class="p-4 border-b border-white/10">التاريخ</th>
+                                    <th class="p-4 border-b border-white/10">العميل</th>
+                                    <th class="p-4 border-b border-white/10">الإجمالي</th>
+                                    <th class="p-4 border-b border-white/10">الحالة</th>
+                                    <th class="p-4 border-b border-white/10 text-center">التفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="divide-y divide-white/5 text-sm">
+                                <!-- Rows loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SLIDER -->
+            <section id="tab-slider" class="admin-section hidden max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                    <span class="text-pink-500">#</span> إدارة العروض (Slider)
+                </h2>
+                <div class="glass p-6 rounded-2xl mb-8 border border-pink-500/20">
+                    <h3 class="text-xl font-bold mb-4 text-pink-400">إضافة عرض جديد</h3>
+                    <form id="add-slider-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" name="title" placeholder="العنوان الرئيسي" required class="input-field">
+                        <input type="text" name="subtitle" placeholder="العنوان الفرعي" class="input-field">
+                        <input type="text" name="image_url" placeholder="رابط الصورة (URL)" required class="input-field col-span-2">
+                        <input type="text" name="link" placeholder="رابط عند الضغط (اختياري)" class="input-field">
+                        <button type="submit" class="bg-pink-600 hover:bg-pink-500 py-2 rounded-lg font-bold transition">إضافة العرض</button>
+                    </form>
+                </div>
+                <div class="space-y-4" id="slider-list-container">
+                    <div class="text-center text-gray-500">جاري التحميل...</div>
+                </div>
+            </section>
+
+            <!-- SECTION: SETTINGS -->
+            <section id="tab-settings" class="admin-section hidden max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8 text-center">إعدادات الموقع</h2>
+                <form id="settings-form" class="glass p-8 rounded-2xl space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-gold font-bold text-lg border-b border-white/10 pb-2">بيانات أساسية</h3>
+                        <input type="text" name="site_name" id="set-site_name" placeholder="اسم الموقع" class="input-field">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">رابط شعار الموقع (Logo URL)</label>
+                            <input type="text" name="site_logo" id="set-site_logo" placeholder="https://example.com/logo.png" class="input-field">
+                        </div>
+                        <input type="text" name="contact_email" id="set-contact_email" placeholder="البريد الإلكتروني" class="input-field">
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-gold font-bold text-lg border-b border-white/10 pb-2">روابط السوشيال ميديا</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="facebook" id="set-facebook" placeholder="Facebook URL" class="input-field">
+                            <input type="text" name="instagram" id="set-instagram" placeholder="Instagram URL" class="input-field">
+                            <input type="text" name="whatsapp" id="set-whatsapp" placeholder="WhatsApp Number" class="input-field">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-gold font-bold text-lg border-b border-white/10 pb-2">النصوص القانونية</h3>
+                        <textarea name="about_text" id="set-about_text" class="input-field h-24" placeholder="من نحن"></textarea>
+                        <textarea name="privacy_policy" id="set-privacy_policy" class="input-field h-24" placeholder="سياسة الخصوصية"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold hover:bg-blue-500 shadow-lg transition">حفظ التغييرات</button>
+                </form>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass w-full max-w-4xl p-6 rounded-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <h3 class="text-xl font-bold mb-4">تعديل بيانات الكتاب</h3>
+            <form id="edit-book-form" class="space-y-5">
+                <input type="hidden" name="id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <input type="text" name="title" required class="input-field" placeholder="العنوان">
+                    <input type="text" name="author" required class="input-field" placeholder="المؤلف">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="number" name="price" required class="input-field" placeholder="السعر">
+                    <input type="number" name="discount" class="input-field" placeholder="الخصم">
+                    <input type="number" name="stock" required class="input-field" placeholder="الكمية">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <select name="category" class="input-field bg-[#222]">
+                        <option value="روايات">روايات</option>
+                        <option value="تنمية ذاتية">تنمية ذاتية</option>
+                        <option value="تاريخ">تاريخ</option>
+                        <option value="علوم">علوم</option>
+                        <option value="أطفال">أطفال</option>
+                        <option value="ديني">ديني</option>
+                    </select>
+                    <select name="age_rating" class="input-field bg-[#222]">
+                        <option value="الكل">الكل</option>
+                        <option value="+12">+12</option>
+                        <option value="+16">+16</option>
+                    </select>
+                    <input type="text" name="release_date" class="input-field" placeholder="سنة الإصدار">
+                </div>
+                <input type="text" name="image_url" class="input-field" placeholder="رابط الصورة">
+                <input type="text" name="tags" class="input-field" placeholder="الوسوم">
+                <textarea name="description" class="input-field h-24" placeholder="الوصف"></textarea>
+                <div class="pt-4 flex gap-4">
+                    <button type="submit" class="flex-1 bg-gold text-black py-3 rounded-lg font-bold">حفظ التعديلات</button>
+                    <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="flex-1 bg-gray-700 py-3 rounded-lg font-bold">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Details Modal (تمت إضافته لإصلاح المشكلة) -->
+    <div id="order-details-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass w-full max-w-3xl p-0 rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
+            <!-- Header -->
+            <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
+                <div>
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-file-invoice text-gold"></i> تفاصيل الطلب
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-1" id="modal-order-id">#ORD-000</p>
+                </div>
+                <button onclick="document.getElementById('order-details-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
+                
+                <!-- Status & Dates -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">الحالة الحالية</span>
+                        <div id="modal-order-status" class="text-xl font-bold text-gold">جديد</div>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-xs block mb-1">تاريخ الإنشاء</span>
+                        <div id="modal-order-date" class="text-white">...</div>
+                    </div>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="space-y-3">
+                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">بيانات العميل</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-gray-500 w-20 inline-block">الاسم:</span> <span id="modal-customer-name" class="text-white font-bold">...</span></div>
+                        <div><span class="text-gray-500 w-20 inline-block">الهاتف:</span> <span id="modal-customer-phone" class="text-white">...</span></div>
+                        <div><span class="text-gray-500 w-20 inline-block">الإيميل:</span> <span id="modal-customer-email" class="text-white">...</span></div>
+                        <div class="col-span-1 md:col-span-2"><span class="text-gray-500 w-20 inline-block">العنوان:</span> <span id="modal-customer-address" class="text-white bg-white/5 px-2 py-1 rounded">...</span></div>
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div class="space-y-3">
+                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">المنتجات المطلوبة</h4>
+                    <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5">
+                        <!-- Items list injected here -->
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <div class="text-lg font-bold">الإجمالي: <span id="modal-order-total" class="text-gold">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Order History (Timeline) -->
+                <div class="space-y-3">
+                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">سجل الحالات</h4>
+                    <div class="space-y-2 text-sm" id="modal-order-history">
+                        <!-- History injected here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed bottom-6 left-6 z-[100] flex flex-col gap-2"></div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
