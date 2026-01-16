@@ -74,33 +74,33 @@
                             <input type="text" name="author" required class="input-field">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="text-sm text-gray-400 mb-1 block">التصنيف</label>
-                            <select name="category" required class="input-field bg-[#222]">
-                                <option value="روايات">روايات</option>
-                                <option value="تنمية ذاتية">تنمية ذاتية</option>
-                                <option value="تاريخ">تاريخ</option>
-                                <option value="علوم">علوم</option>
-                                <option value="أطفال">أطفال</option>
-                                <option value="ديني">ديني</option>
-                                <option value="سير ذاتية">سير ذاتية</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-400 mb-1 block">الفئة العمرية</label>
-                            <select name="age_rating" class="input-field bg-[#222]">
-                                <option value="الكل">الكل</option>
-                                <option value="+12">+12</option>
-                                <option value="+16">+16</option>
-                                <option value="+18">+18</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-400 mb-1 block">سنة الإصدار</label>
-                            <input type="number" name="release_date" class="input-field">
-                        </div>
-                    </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div>
+        <label class="text-sm text-gray-400 mb-1 block">التصنيف</label>
+        <select name="category" required class="input-field bg-[#222]">
+            <option value="روايات">روايات</option>
+            <option value="تنمية ذاتية">تنمية ذاتية</option>
+            <option value="تاريخ">تاريخ</option>
+            <option value="علوم">علوم</option>
+            <option value="أطفال">أطفال</option>
+            <option value="ديني">ديني</option>
+            <option value="سير ذاتية">سير ذاتية</option>
+        </select>
+    </div>
+    <div>
+        <label class="text-sm text-gray-400 mb-1 block">دار النشر</label>
+        <input type="text" name="publisher" required class="input-field" placeholder="اسم الدار">
+    </div>
+    <div>
+        <label class="text-sm text-gray-400 mb-1 block">اللغة</label>
+        <select name="language" class="input-field bg-[#222]">
+            <option value="العربية">العربية</option>
+            <option value="الإنجليزية">الإنجليزية</option>
+            <option value="الفرنسية">الفرنسية</option>
+            <option value="أخرى">أخرى</option>
+        </select>
+    </div>
+</div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/5 p-4 rounded-xl border border-white/5">
                         <div>
                             <label class="text-sm text-gray-400 mb-1 block">السعر (ج.م)</label>
@@ -266,22 +266,24 @@
                     <input type="number" name="discount" class="input-field" placeholder="الخصم">
                     <input type="number" name="stock" required class="input-field" placeholder="الكمية">
                 </div>
-                <div class="grid grid-cols-3 gap-4">
-                    <select name="category" class="input-field bg-[#222]">
-                        <option value="روايات">روايات</option>
-                        <option value="تنمية ذاتية">تنمية ذاتية</option>
-                        <option value="تاريخ">تاريخ</option>
-                        <option value="علوم">علوم</option>
-                        <option value="أطفال">أطفال</option>
-                        <option value="ديني">ديني</option>
-                    </select>
-                    <select name="age_rating" class="input-field bg-[#222]">
-                        <option value="الكل">الكل</option>
-                        <option value="+12">+12</option>
-                        <option value="+16">+16</option>
-                    </select>
-                    <input type="text" name="release_date" class="input-field" placeholder="سنة الإصدار">
-                </div>
+<div class="grid grid-cols-3 gap-4">
+    <select name="category" class="input-field bg-[#222]">
+        <option value="روايات">روايات</option>
+        <option value="تنمية ذاتية">تنمية ذاتية</option>
+        <option value="تاريخ">تاريخ</option>
+        <option value="علوم">علوم</option>
+        <option value="أطفال">أطفال</option>
+        <option value="ديني">ديني</option>
+    </select>
+    <input type="text" name="publisher" class="input-field" placeholder="دار النشر">
+    
+    <select name="language" class="input-field bg-[#222]">
+        <option value="العربية">العربية</option>
+        <option value="الإنجليزية">الإنجليزية</option>
+        <option value="الفرنسية">الفرنسية</option>
+        <option value="أخرى">أخرى</option>
+    </select>
+</div>
                 <input type="text" name="image_url" class="input-field" placeholder="رابط الصورة">
                 <input type="text" name="tags" class="input-field" placeholder="الوسوم">
                 <textarea name="description" class="input-field h-24" placeholder="الوصف"></textarea>

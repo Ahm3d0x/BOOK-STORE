@@ -145,40 +145,40 @@
                                class="w-full bg-black/40 border border-white/10 rounded-xl py-4 pr-12 pl-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 outline-none transition text-lg">
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="relative">
-                            <label class="block text-xs text-gray-400 mb-1 mr-1">التصنيف</label>
-                            <div class="relative">
-                                <i class="fas fa-tags absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-                                <select id="filter-category" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                                    <option value="all">كل التصنيفات</option>
-                                </select>
-                                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
-                            </div>
-                        </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="relative">
+        <label class="block text-xs text-gray-400 mb-1 mr-1">التصنيف</label>
+        <div class="relative">
+            <i class="fas fa-tags absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+            <select id="filter-category" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
+                <option value="all">كل التصنيفات</option>
+            </select>
+            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+        </div>
+    </div>
 
-                        <div class="relative">
-                            <label class="block text-xs text-gray-400 mb-1 mr-1">سنة الإصدار</label>
-                            <div class="relative">
-                                <i class="fas fa-calendar-alt absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-                                <select id="filter-year" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                                    <option value="all">كل السنوات</option>
-                                </select>
-                                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
-                            </div>
-                        </div>
+    <div class="relative">
+        <label class="block text-xs text-gray-400 mb-1 mr-1">اللغة</label>
+        <div class="relative">
+            <i class="fas fa-language absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+            <select id="filter-language" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
+                <option value="all">كل اللغات</option>
+            </select>
+            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+        </div>
+    </div>
 
-                        <div class="relative">
-                            <label class="block text-xs text-gray-400 mb-1 mr-1">الفئة العمرية</label>
-                            <div class="relative">
-                                <i class="fas fa-user-friends absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-                                <select id="filter-age" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                                    <option value="all">جميع الفئات</option>
-                                </select>
-                                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
+    <div class="relative">
+        <label class="block text-xs text-gray-400 mb-1 mr-1">دار النشر</label>
+        <div class="relative">
+            <i class="fas fa-building absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+            <select id="filter-publisher" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
+                <option value="all">جميع الدور</option>
+            </select>
+            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+        </div>
+    </div>
+</div>
                 </div>
 
                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-6 md:gap-8 pb-10">
@@ -368,12 +368,14 @@
             <button onclick="shareBook()" class="text-gray-400 hover:text-gold p-3 rounded-full hover:bg-white/5 transition"><i class="fas fa-share-nodes text-2xl"></i></button>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
-            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">السنة</span><span id="modal-book-year" class="font-bold text-white text-sm"></span></div>
-            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">العمر</span><span id="modal-book-age" class="font-bold text-white text-sm"></span></div>
-            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
-        </div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
+    
+    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">اللغة</span><span id="modal-book-language" class="font-bold text-white text-sm"></span></div>
+    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الناشر</span><span id="modal-book-publisher" class="font-bold text-white text-sm"></span></div>
+    
+    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
+</div>
 
         <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed mb-8 flex-grow">
             <h3 class="text-white font-bold mb-2 text-lg border-b border-white/10 pb-2 inline-block">نبذة عن الكتاب:</h3>

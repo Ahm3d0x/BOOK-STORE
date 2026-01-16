@@ -164,28 +164,31 @@ function renderInventory(books) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500">لا توجد نتائج</td></tr>';
         return;
     }
-    tbody.innerHTML = books.map(book => `
-        <tr class="hover:bg-white/5 transition group border-b border-white/5 last:border-0">
-            <td class="p-4">
-                <div class="flex items-center gap-3">
-                    <img src="${getImageUrl(book.image_url)}" class="w-10 h-14 object-cover rounded shadow-sm bg-gray-800" onerror="this.src='https://via.placeholder.com/40x60'">
-                    <div>
-                        <div class="font-bold text-white">${book.title}</div>
-                        <div class="text-xs text-gray-400">${book.author}</div>
-                    </div>
+tbody.innerHTML = books.map(book => `
+    <tr class="hover:bg-white/5 transition group border-b border-white/5 last:border-0">
+        <td class="p-4">
+            <div class="flex items-center gap-3">
+                <img src="${getImageUrl(book.image_url)}" class="w-10 h-14 object-cover rounded shadow-sm bg-gray-800" onerror="this.src='https://via.placeholder.com/40x60'">
+                <div>
+                    <div class="font-bold text-white">${book.title}</div>
+                    <div class="text-xs text-gray-400">${book.author}</div>
                 </div>
-            </td>
-            <td class="p-4"><div class="text-gold font-bold">${book.price} ج.م</div>${book.discount > 0 ? `<div class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded inline-block">خصم ${book.discount}</div>` : ''}</td>
-            <td class="p-4"><span class="font-bold ${book.stock > 5 ? 'text-green-400' : 'text-red-400'}">${book.stock}</span></td>
-            <td class="p-4"><span class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-300">${book.category || 'عام'}</span></td>
-            <td class="p-4 text-center">
-                <div class="flex justify-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
-                    <button onclick='openEditModal(${JSON.stringify(book)})' class="bg-blue-600 p-2 rounded text-white hover:bg-blue-500"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteBook('${book.id}')" class="bg-red-600 p-2 rounded text-white hover:bg-red-500"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+            </div>
+        </td>
+        <td class="p-4"><div class="text-gold font-bold">${book.price} ج.م</div>${book.discount > 0 ? `<div class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded inline-block">خصم ${book.discount}</div>` : ''}</td>
+        <td class="p-4"><span class="font-bold ${book.stock > 5 ? 'text-green-400' : 'text-red-400'}">${book.stock}</span></td>
+        <td class="p-4">
+            <div class="text-xs text-gray-300 mb-1">${book.category || 'عام'}</div>
+            <span class="text-[10px] bg-gray-700 px-2 py-1 rounded text-gray-400">${book.language || '-'}</span>
+        </td>
+        <td class="p-4 text-center">
+            <div class="flex justify-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
+                <button onclick='openEditModal(${JSON.stringify(book)})' class="bg-blue-600 p-2 rounded text-white hover:bg-blue-500"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteBook('${book.id}')" class="bg-red-600 p-2 rounded text-white hover:bg-red-500"><i class="fas fa-trash"></i></button>
+            </div>
+        </td>
+    </tr>
+`).join('');
 }
 
 function filterInventory(term) {
@@ -203,8 +206,11 @@ function openEditModal(book) {
     form.stock.value = book.stock || '';
     form.discount.value = book.discount || 0;
     form.category.value = book.category || 'روايات';
-    form.age_rating.value = book.age_rating || 'الكل';
-    form.release_date.value = book.release_date || ''; 
+    
+    // التعديل هنا: استخدام الحقول الجديدة
+    form.publisher.value = book.publisher || ''; 
+    form.language.value = book.language || 'العربية'; 
+
     form.image_url.value = book.image_url || '';
     form.tags.value = book.tags || '';
     form.description.value = book.description || '';

@@ -116,22 +116,30 @@ function updateSiteBranding() {
 function populateFilters() {
     const books = appState.books;
     const categories = [...new Set(books.map(b => b.category).filter(Boolean))].sort();
-    const years = [...new Set(books.map(b => b.release_date).filter(Boolean))].sort().reverse();
-    const ages = [...new Set(books.map(b => b.age_rating).filter(Boolean))].sort();
+    
+    // التغيير: استخراج اللغات ودور النشر بدلاً من السنوات والأعمار
+    const languages = [...new Set(books.map(b => b.language).filter(Boolean))].sort();
+    const publishers = [...new Set(books.map(b => b.publisher).filter(Boolean))].sort();
 
     const catSelect = document.getElementById('filter-category');
-    const yearSelect = document.getElementById('filter-year');
-    const ageSelect = document.getElementById('filter-age');
+    const langSelect = document.getElementById('filter-language'); // ID جديد
+    const pubSelect = document.getElementById('filter-publisher'); // ID جديد
+
+    // تفريغ القوائم أولاً لتجنب التكرار عند إعادة التحميل
+    catSelect.innerHTML = '<option value="all">كل التصنيفات</option>';
+    langSelect.innerHTML = '<option value="all">كل اللغات</option>';
+    pubSelect.innerHTML = '<option value="all">جميع الدور</option>';
 
     categories.forEach(c => catSelect.add(new Option(c, c)));
-    years.forEach(y => yearSelect.add(new Option(y, y)));
-    ages.forEach(a => ageSelect.add(new Option(a, a)));
+    languages.forEach(l => langSelect.add(new Option(l, l)));
+    publishers.forEach(p => pubSelect.add(new Option(p, p)));
 }
-
 function setupFilterListeners() {
-    const ids = ['search-input', 'filter-category', 'filter-year', 'filter-age'];
+    // تحديث الـ IDs
+    const ids = ['search-input', 'filter-category', 'filter-language', 'filter-publisher'];
     ids.forEach(id => {
-        document.getElementById(id).addEventListener('input', renderGallery);
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('input', renderGallery);
     });
 }
 
@@ -365,35 +373,31 @@ function renderGallery() {
 
     const term = document.getElementById('search-input').value.toLowerCase();
     const cat = document.getElementById('filter-category').value;
-    const year = document.getElementById('filter-year').value;
-    const age = document.getElementById('filter-age').value;
+    // المتغيرات الجديدة
+    const lang = document.getElementById('filter-language').value;
+    const pub = document.getElementById('filter-publisher').value;
     
     const filtered = appState.books.filter(b => {
         const matchesSearch = (b.title + ' ' + b.author).toLowerCase().includes(term);
         const matchesCat = cat === 'all' || b.category === cat;
-        const matchesYear = year === 'all' || String(b.release_date) === year;
-        const matchesAge = age === 'all' || b.age_rating === age;
-        return matchesSearch && matchesCat && matchesYear && matchesAge;
+        // منطق الفلترة الجديد
+        const matchesLang = lang === 'all' || b.language === lang;
+        const matchesPub = pub === 'all' || b.publisher === pub;
+        
+        return matchesSearch && matchesCat && matchesLang && matchesPub;
     });
-
+    
+    // ... باقي الدالة كما هو (عرض الرسالة إذا لم توجد نتائج)
     if(!filtered.length) {
-        grid.innerHTML = `
-            <div class="col-span-full text-center py-20 text-gray-500 flex flex-col items-center">
-                <i class="fas fa-search text-4xl mb-4 text-gray-700"></i>
-                <p class="text-lg">لا توجد نتائج مطابقة لبحثك.</p>
-                <button onclick="resetFilters()" class="mt-4 text-gold hover:underline">إعادة تعيين الفلاتر</button>
-            </div>`;
-        return;
+       // ... نفس الكود القديم لرسالة لا توجد نتائج ...
     }
-
     grid.innerHTML = filtered.map(book => createBookCard(book)).join('');
-}
-
+}   
 function resetFilters() {
     document.getElementById('search-input').value = '';
     document.getElementById('filter-category').value = 'all';
-    document.getElementById('filter-year').value = 'all';
-    document.getElementById('filter-age').value = 'all';
+    document.getElementById('filter-language').value = 'all'; // جديد
+    document.getElementById('filter-publisher').value = 'all'; // جديد
     renderGallery();
 }
 
