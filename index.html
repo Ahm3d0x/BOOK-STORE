@@ -138,48 +138,53 @@
         <section id="gallery-view" class="view-section hidden slide-in">
             <div class="container mx-auto px-4">
                 
-                <div class="glass-high rounded-3xl p-6 mb-10 sticky top-24 z-30 shadow-2xl border border-white/10 max-w-7xl mx-auto">
-                    <div class="relative w-full mb-6">
-                        <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gold text-lg"></i>
-                        <input type="text" id="search-input" placeholder="ابحث باسم الكتاب أو اسم المؤلف..." 
-                               class="w-full bg-black/40 border border-white/10 rounded-xl py-4 pr-12 pl-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 outline-none transition text-lg">
-                    </div>
-                    
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="relative">
-        <label class="block text-xs text-gray-400 mb-1 mr-1">التصنيف</label>
-        <div class="relative">
-            <i class="fas fa-tags absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-            <select id="filter-category" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                <option value="all">كل التصنيفات</option>
-            </select>
-            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+<div class="glass-high rounded-3xl p-4 md:p-6 mb-6 md:mb-10 sticky top-20 md:top-24 z-30 shadow-2xl border border-white/10 max-w-7xl mx-auto transition-all duration-300">
+    
+    <div class="flex gap-3 items-center mb-0 md:mb-6">
+        
+        <div class="relative w-full">
+            <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gold text-sm md:text-lg"></i>
+            <input type="text" id="search-input" placeholder="بحث باسم الكتاب أو المؤلف..." 
+                   class="w-full bg-black/40 border border-white/10 rounded-xl py-3 md:py-4 pr-10 md:pr-12 pl-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-gold/50 focus:border-gold/50 outline-none transition text-sm md:text-lg">
         </div>
-    </div>
 
-    <div class="relative">
-        <label class="block text-xs text-gray-400 mb-1 mr-1">اللغة</label>
+        <button onclick="toggleFilters()" class="md:hidden bg-gold/10 text-gold border border-gold/20 p-3 rounded-xl hover:bg-gold hover:text-black transition shrink-0 flex items-center justify-center w-12 h-12">
+            <i class="fas fa-sliders-h text-lg"></i>
+        </button>
+    </div>
+    
+    <div id="filters-container" class="hidden md:grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-0 border-t border-white/10 pt-4 md:border-0 md:pt-0">
         <div class="relative">
-            <i class="fas fa-language absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-            <select id="filter-language" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                <option value="all">كل اللغات</option>
-            </select>
-            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+            <label class="block text-[10px] md:text-xs text-gray-400 mb-1 mr-1">التصنيف</label>
+            <div class="relative">
+                <select id="filter-category" class="w-full bg-black/40 border border-white/10 rounded-lg py-2 md:py-3 pr-8 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-xs md:text-sm">
+                    <option value="all">كل التصنيفات</option>
+                </select>
+                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+            </div>
         </div>
-    </div>
 
-    <div class="relative">
-        <label class="block text-xs text-gray-400 mb-1 mr-1">دار النشر</label>
         <div class="relative">
-            <i class="fas fa-building absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
-            <select id="filter-publisher" class="w-full bg-black/40 border border-white/10 rounded-lg py-3 pr-10 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-sm">
-                <option value="all">جميع الدور</option>
-            </select>
-            <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+            <label class="block text-[10px] md:text-xs text-gray-400 mb-1 mr-1">اللغة</label>
+            <div class="relative">
+                <select id="filter-language" class="w-full bg-black/40 border border-white/10 rounded-lg py-2 md:py-3 pr-8 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-xs md:text-sm">
+                    <option value="all">كل اللغات</option>
+                </select>
+                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+            </div>
+        </div>
+
+        <div class="relative col-span-2 md:col-span-1"> <label class="block text-[10px] md:text-xs text-gray-400 mb-1 mr-1">دار النشر</label>
+            <div class="relative">
+                <select id="filter-publisher" class="w-full bg-black/40 border border-white/10 rounded-lg py-2 md:py-3 pr-8 pl-4 text-white appearance-none cursor-pointer hover:border-gold/30 focus:border-gold transition text-xs md:text-sm">
+                    <option value="all">جميع الدور</option>
+                </select>
+                <i class="fas fa-chevron-down absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none text-xs"></i>
+            </div>
         </div>
     </div>
 </div>
-                </div>
+
 
                <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-6 md:gap-8 pb-10">
                     </div>

@@ -459,8 +459,8 @@ document.getElementById('modal-bg-blur').src = getImageUrl(book.image_url);
     document.getElementById('modal-book-author').textContent = book.author;
     document.getElementById('modal-book-desc').textContent = book.description || 'لا يوجد وصف متاح لهذا الكتاب حالياً.';
     document.getElementById('modal-book-category').textContent = book.category || '-';
-    document.getElementById('modal-book-year').textContent = book.release_date || '-';
-    document.getElementById('modal-book-age').textContent = book.age_rating || 'الكل';
+document.getElementById('modal-book-language').textContent = book.language || '-';
+document.getElementById('modal-book-publisher').textContent = book.publisher || '-';
     document.getElementById('modal-book-date').textContent = book.date_added || '-';
     
 const tagsDiv = document.getElementById('modal-book-tags');
@@ -860,4 +860,9 @@ function getImageUrl(url) {
     }
     
     return url;
+}
+function toggleFilters() {
+    const container = document.getElementById('filters-container');
+    container.classList.toggle('hidden');
+    container.classList.toggle('grid'); // للتبديل بين الإخفاء ونظام الشبكة
 }
