@@ -68,15 +68,38 @@ async function fetchOrdersForTracking() {
 // === Branding ===
 function updateSiteBranding() {
     const s = appState.settings;
+    
+    // تحديث اسم الموقع
     if(s.site_name) {
         document.title = s.site_name;
         document.querySelectorAll('.site-name-display').forEach(el => el.textContent = s.site_name);
     }
+
+    // تحديث اللوجو (في صفحة من نحن + الناف بار)
     if(s.site_logo) {
-        const logoImg = document.getElementById('about-logo-img');
-        const logoIcon = document.getElementById('about-logo-icon');
-        if(logoImg && logoIcon) { logoImg.src = s.site_logo; logoImg.classList.remove('hidden'); logoIcon.classList.add('hidden'); }
+        // معالجة الرابط باستخدام دالة getImageUrl ليعمل مع جوجل درايف
+        const logoUrl = getImageUrl(s.site_logo); 
+
+        // 1. لوجو صفحة من نحن
+        const aboutImg = document.getElementById('about-logo-img');
+        const aboutIcon = document.getElementById('about-logo-icon');
+        if(aboutImg && aboutIcon) { 
+            aboutImg.src = logoUrl; 
+            aboutImg.classList.remove('hidden'); 
+            aboutIcon.classList.add('hidden'); 
+        }
+
+        // 2. لوجو الناف بار (الشريط العلوي)
+        const navImg = document.getElementById('nav-logo-img');
+        const navIcon = document.getElementById('nav-logo-icon');
+        if(navImg && navIcon) {
+            navImg.src = logoUrl;
+            navImg.classList.remove('hidden');
+            navIcon.classList.add('hidden');
+        }
     }
+
+    // باقي الكود كما هو...
     if(s.about_text) document.getElementById('about-text').innerHTML = s.about_text.replace(/\n/g, '<br>');
     if(s.privacy_policy) document.getElementById('privacy-text').textContent = s.privacy_policy;
     
@@ -89,7 +112,6 @@ function updateSiteBranding() {
         }
     }
 }
-
 // === Filter Logic ===
 function populateFilters() {
     const books = appState.books;
@@ -128,7 +150,7 @@ function renderStackSlider() {
     container.innerHTML = activeSlides.map((slide, index) => `
         <div class="card-stack-item glass rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing border border-white/10" id="slide-${index}" 
              style="z-index: ${activeSlides.length - index};">
-            <img src="${slide.image_url}" class="w-full h-full object-cover opacity-60 mix-blend-overlay" onerror="this.src='https://placehold.co/800x400?text=Offer'">
+            <img src="${getImageUrl(slide.image_url)}" class="w-full h-full object-cover mix-blend-overlay" onerror="this.src='https://placehold.co/800x400?text=Offer'">
              <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 flex flex-col items-start">
                 <span class="bg-gold text-black px-4 py-1 rounded-full text-xs font-bold mb-4 inline-block shadow-lg uppercase tracking-wider">مميز</span>
@@ -313,7 +335,7 @@ function renderFeatured() {
         return `
             <div class="min-w-[180px] w-full glass rounded-2xl overflow-hidden cursor-pointer group relative snap-center transition duration-300 border border-white/5 hover:border-gold/30" onclick="openBookModal('${book.id}')">
                 <div class="h-64 overflow-hidden relative bg-black/50">
-                    <img src="${book.image_url}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                    <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
                     
                     ${isOutOfStock 
                         ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20">نفذت الكمية</span>`
@@ -382,8 +404,8 @@ function createBookCard(book) {
 
     return `
         <div class="book-card group relative h-full flex flex-col cursor-pointer" onclick="openBookModal('${book.id}')">
-            <div class="book-cover-wrapper w-full aspect-[2/3] rounded-lg overflow-hidden relative mb-4">
-                <img src="${book.image_url}" class="w-full h-full object-cover transition duration-500 ${isOutOfStock ? 'grayscale opacity-70' : ''}" onerror="this.src='https://placehold.co/300x450?text=No+Image'">
+<div class="book-cover-wrapper w-full aspect-square rounded-xl overflow-hidden relative mb-4 shadow-lg border border-white/5">
+             <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-cover transition duration-500 ${isOutOfStock ? 'grayscale opacity-70' : ''}" onerror="this.src='https://placehold.co/300x450?text=No+Image'">
                 
                 ${isOutOfStock 
                     ? `<span class="absolute top-3 right-3 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded shadow-lg z-20 border border-white/20">نفذت الكمية</span>` 
@@ -427,8 +449,8 @@ function openBookModal(id) {
     const modal = document.getElementById('book-modal');
     const content = document.getElementById('book-modal-content');
     
-    document.getElementById('modal-book-img').src = book.image_url;
-    document.getElementById('modal-bg-blur').src = book.image_url; 
+document.getElementById('modal-book-img').src = getImageUrl(book.image_url);
+document.getElementById('modal-bg-blur').src = getImageUrl(book.image_url);
     document.getElementById('modal-book-title').textContent = book.title;
     document.getElementById('modal-book-author').textContent = book.author;
     document.getElementById('modal-book-desc').textContent = book.description || 'لا يوجد وصف متاح لهذا الكتاب حالياً.';
@@ -437,9 +459,20 @@ function openBookModal(id) {
     document.getElementById('modal-book-age').textContent = book.age_rating || 'الكل';
     document.getElementById('modal-book-date').textContent = book.date_added || '-';
     
-    const tagsDiv = document.getElementById('modal-book-tags');
-    tagsDiv.innerHTML = book.tags ? book.tags.split('-').map(t => `<span class="bg-gold/10 border border-gold/20 text-gold text-[10px] px-2 py-1 rounded-full">${t}</span>`).join('') : '';
-
+const tagsDiv = document.getElementById('modal-book-tags');
+if (book.tags) {
+    // هذا السطر يقوم بتقسيم النص سواء كان الفاصل (شرطة -) أو (فاصلة ،) أو (فاصلة إنجليزية ,)
+    // ويقوم بإزالة المسافات الزائدة
+    const tagsList = book.tags.split(/[-،,]/).map(t => t.trim()).filter(t => t);
+    
+    tagsDiv.innerHTML = tagsList.map(t => `
+        <span class="inline-block bg-[#1a1a1a] border border-gold/30 text-gold text-xs px-3 py-1.5 rounded-lg shadow-sm hover:bg-gold/10 transition duration-300 cursor-default">
+            ${t}
+        </span>
+    `).join('');
+} else {
+    tagsDiv.innerHTML = '';
+}
     const priceEl = document.getElementById('modal-book-price');
     const oldPriceEl = document.getElementById('modal-book-old-price');
     const badge = document.getElementById('modal-discount-badge');
@@ -579,7 +612,6 @@ function addToCart(id) {
     const book = appState.books.find(b => b.id == id);
     if(!book) return;
 
-    // 🔥 الحماية المنطقية: منع الإضافة إذا كان المخزون 0 أو أقل 🔥
     if (parseInt(book.stock) <= 0) {
         showToast('عذراً، لقد نفذت كمية هذا الكتاب! 😔', 'error');
         return;
@@ -624,7 +656,7 @@ function renderCart() {
         total += p.final * item.qty;
         return `
             <div class="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5 relative group hover:bg-white/10 transition">
-                <img src="${item.image_url}" class="w-16 h-20 object-cover rounded-lg shadow-sm">
+               <img src="${getImageUrl(item.image_url)}" class="w-16 h-20 object-cover rounded-lg shadow-sm">
                 <div class="flex-1 flex flex-col justify-between">
                     <div>
                         <h4 class="font-bold text-sm text-white line-clamp-1 mb-1">${item.title}</h4>
@@ -802,3 +834,26 @@ function updateQty(id, d) {
 }
 function saveCart() { localStorage.setItem('cart', JSON.stringify(appState.cart)); }
 function loadCartFromStorage() { appState.cart = JSON.parse(localStorage.getItem('cart') || '[]'); renderCart(); }
+function getImageUrl(url) {
+    if (!url) return 'https://placehold.co/300x450?text=No+Image';
+    
+    // استخراج ID الملف سواء كان الرابط يحتوي على /d/ أو id=
+    let id = '';
+    
+    // الحالة الأولى: رابط مشاركة عادي (.../d/ID/...)
+    const part1 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (part1 && part1[1]) id = part1[1];
+    
+    // الحالة الثانية: رابط مباشر (...?id=ID)
+    if (!id) {
+        const part2 = url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (part2 && part2[1]) id = part2[1];
+    }
+
+    // إذا وجدنا الـ ID، نستخدم رابط lh3 السريع
+    if (id) {
+        return `https://lh3.googleusercontent.com/d/${id}`;
+    }
+    
+    return url;
+}

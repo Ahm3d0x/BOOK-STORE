@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>Book.com - عالم المعرفة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -63,13 +64,18 @@
 <body class="text-white overflow-x-hidden flex flex-col min-h-screen">
 
     <nav class="fixed top-0 w-full z-50 glass border-b border-white/5 px-4 py-3 transition-all duration-300">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3 cursor-pointer group" onclick="router('home')">
-                <div class="w-10 h-10 bg-gradient-to-br from-gold to-yellow-700 rounded-xl flex items-center justify-center text-black shadow-[0_0_15px_rgba(255,215,0,0.3)] group-hover:shadow-[0_0_25px_rgba(255,215,0,0.5)] transition duration-300">
-                    <i class="fas fa-book-open text-xl"></i>
-                </div>
-                <h1 class="font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 site-name-display">Book.com</h1>
-            </div>
+            <div class="flex items-center justify-between container mx-auto">
+
+<div class="flex items-center gap-3 cursor-pointer group" onclick="router('home')">
+    
+    <div id="nav-logo-icon" class="w-10 h-10 bg-gradient-to-br from-gold to-yellow-700 rounded-xl flex items-center justify-center text-black shadow-[0_0_15px_rgba(255,215,0,0.3)] group-hover:shadow-[0_0_25px_rgba(255,215,0,0.5)] transition duration-300">
+        <i class="fas fa-book-open text-xl"></i>
+    </div>
+
+    <img id="nav-logo-img" src="" class="w-16 h-16 object-cover hidden shadow-lg hover:scale-110 transition-transform duration-300" alt="Logo">
+
+    <h1 class="font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 site-name-display">Book.com</h1>
+</div>
 
             <div class="hidden md:flex bg-white/5 rounded-full px-2 p-1 border border-white/5 backdrop-blur-md">
                 <button onclick="router('home')" class="nav-btn px-5 py-2 rounded-full hover:bg-white/10 hover:text-gold transition text-sm font-bold flex items-center gap-2 text-gray-300"><i class="fas fa-home"></i> الرئيسية</button>
@@ -175,7 +181,7 @@
                     </div>
                 </div>
 
-                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 pb-10">
+               <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-6 md:gap-8 pb-10">
                     </div>
             </div>
         </section>
@@ -275,8 +281,8 @@
                     <div class="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent pointer-events-none"></div>
                     
                     <div class="mb-8 flex justify-center relative z-10">
-                        <img id="about-logo-img" src="" class="w-32 h-32 object-contain hidden drop-shadow-2xl">
-                        <div id="about-logo-icon" class="w-32 h-32 bg-gold rounded-3xl flex items-center justify-center text-6xl text-black shadow-glow rotate-3 hover:rotate-0 transition duration-500">
+                        <img id="about-logo-img" src="" class="w-56 h-56 object-contain hidden drop-shadow-2xl hover:scale-105 transition duration-500">
+                        <div id="about-logo-icon" class="w-40 h-40 bg-gold rounded-3xl flex items-center justify-center text-7xl text-black shadow-glow rotate-3 hover:rotate-0 transition duration-500">
                             <i class="fas fa-book-reader"></i>
                         </div>
                     </div>
@@ -339,43 +345,50 @@
     </div>
 
     <div id="book-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-xl opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeBookModal()">
-        <div class="glass w-full max-w-5xl rounded-3xl overflow-hidden relative shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col md:flex-row max-h-[90vh] border border-white/10" id="book-modal-content">
-            <button onclick="closeBookModal()" class="absolute top-4 left-4 z-20 bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition backdrop-blur-md"><i class="fas fa-times"></i></button>
-            <div class="w-full md:w-5/12 h-64 md:h-auto bg-[#0a0a0a] relative flex items-center justify-center p-8">
-                <div class="relative w-48 md:w-64 aspect-[2/3] rounded shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform hover:scale-105 transition duration-500">
-                    <img id="modal-book-img" src="" class="w-full h-full object-cover rounded" onerror="this.src='https://placehold.co/400x600?text=No+Image'">
-                    <div id="modal-discount-badge" class="absolute -top-3 -right-3 bg-red-600 text-white font-bold px-3 py-1 rounded-lg shadow-lg hidden z-10 text-sm rotate-3 border border-white/20"></div>
-                </div>
-                <img id="modal-bg-blur" src="" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-xl pointer-events-none">
-            </div>
-            <div class="w-full md:w-7/12 p-6 md:p-10 overflow-y-auto custom-scrollbar flex flex-col bg-gradient-to-b from-white/5 to-[#0a0a0a]">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <div id="modal-book-tags" class="flex flex-wrap gap-2 mb-3"></div>
-                        <h2 id="modal-book-title" class="text-3xl md:text-4xl font-black text-white mb-2 leading-tight"></h2>
-                        <p class="text-gray-400 text-lg">بقلم: <span id="modal-book-author" class="text-gold font-semibold"></span></p>
-                    </div>
-                    <button onclick="shareBook()" class="text-gray-400 hover:text-gold p-3 rounded-full hover:bg-white/5 transition" title="مشاركة"><i class="fas fa-share-nodes text-2xl"></i></button>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs mb-1">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs mb-1">سنة الإصدار</span><span id="modal-book-year" class="font-bold text-white text-sm"></span></div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs mb-1">الفئة العمرية</span><span id="modal-book-age" class="font-bold text-white text-sm"></span></div>
-                    <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-xs mb-1">تاريخ الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
-                </div>
-                <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed mb-8 flex-grow">
-                    <h3 class="text-white font-bold mb-2 text-lg border-b border-white/10 pb-2 inline-block">نبذة عن الكتاب:</h3>
-                    <p id="modal-book-desc" class="text-sm md:text-base opacity-90"></p>
-                </div>
-                <div class="mt-auto border-t border-white/10 pt-6 flex items-center justify-between gap-6">
-                    <div>
-                        <div id="modal-book-old-price" class="text-sm text-gray-500 line-through decoration-red-500 hidden"></div>
-                        <div class="flex items-baseline gap-1"><span id="modal-book-price" class="text-4xl font-bold text-gold"></span><span class="text-gray-400 text-sm">ج.م</span></div>
-                    </div>
-                    <button id="modal-add-btn" class="bg-white text-black font-bold py-4 px-8 rounded-xl hover:bg-gold transition flex-1 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-gold/50 transform active:scale-95"><span>إضافة للسلة</span> <i class="fas fa-cart-plus"></i></button>
-                </div>
-            </div>
+<div class="glass w-full max-w-6xl rounded-3xl overflow-hidden relative shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col md:flex-row max-h-[90vh] border border-white/10" id="book-modal-content">
+    
+    <button onclick="closeBookModal()" class="absolute top-4 left-4 z-20 bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition backdrop-blur-md shadow-lg border border-white/10"><i class="fas fa-times"></i></button>
+    
+    <div class="w-full md:w-1/2 bg-[#050505] relative flex items-center justify-center p-2 md:p-4"> <div class="relative w-full max-w-md aspect-square rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/5 overflow-hidden group">
+            <img id="modal-book-img" src="" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700" onerror="this.src='https://placehold.co/600x600?text=No+Image'">
+            
+            <div id="modal-discount-badge" class="absolute top-4 right-4 bg-red-600 text-white font-bold px-3 py-1 rounded-lg shadow-lg hidden z-10 text-lg border border-white/20"></div>
         </div>
+
+        <img id="modal-bg-blur" src="" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-3xl pointer-events-none">
+    </div>
+
+    <div class="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto custom-scrollbar flex flex-col bg-gradient-to-b from-white/5 to-[#0a0a0a]">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <div id="modal-book-tags" class="flex flex-wrap gap-2 mb-2"></div>
+                <h2 id="modal-book-title" class="text-3xl md:text-5xl font-black text-white mb-2 leading-tight"></h2>
+                <p class="text-gray-400 text-lg">بقلم: <span id="modal-book-author" class="text-gold font-semibold"></span></p>
+            </div>
+            <button onclick="shareBook()" class="text-gray-400 hover:text-gold p-3 rounded-full hover:bg-white/5 transition"><i class="fas fa-share-nodes text-2xl"></i></button>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">السنة</span><span id="modal-book-year" class="font-bold text-white text-sm"></span></div>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">العمر</span><span id="modal-book-age" class="font-bold text-white text-sm"></span></div>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
+        </div>
+
+        <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed mb-8 flex-grow">
+            <h3 class="text-white font-bold mb-2 text-lg border-b border-white/10 pb-2 inline-block">نبذة عن الكتاب:</h3>
+            <p id="modal-book-desc" class="text-sm md:text-base opacity-90"></p>
+        </div>
+
+        <div class="mt-auto border-t border-white/10 pt-6 flex items-center justify-between gap-6">
+            <div>
+                <div id="modal-book-old-price" class="text-sm text-gray-500 line-through decoration-red-500 hidden"></div>
+                <div class="flex items-baseline gap-1"><span id="modal-book-price" class="text-4xl font-bold text-gold"></span><span class="text-gray-400 text-sm">ج.م</span></div>
+            </div>
+            <button id="modal-add-btn" class="bg-white text-black font-bold py-4 px-8 rounded-xl hover:bg-gold transition flex-1 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-gold/50 transform active:scale-95"><span>إضافة للسلة</span> <i class="fas fa-cart-plus"></i></button>
+        </div>
+    </div>
+</div>
     </div>
 
     <div id="toast-container" class="fixed top-24 left-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>

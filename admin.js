@@ -168,7 +168,7 @@ function renderInventory(books) {
         <tr class="hover:bg-white/5 transition group border-b border-white/5 last:border-0">
             <td class="p-4">
                 <div class="flex items-center gap-3">
-                    <img src="${book.image_url}" class="w-10 h-14 object-cover rounded shadow-sm bg-gray-800" onerror="this.src='https://via.placeholder.com/40x60'">
+                    <img src="${getImageUrl(book.image_url)}" class="w-10 h-14 object-cover rounded shadow-sm bg-gray-800" onerror="this.src='https://via.placeholder.com/40x60'">
                     <div>
                         <div class="font-bold text-white">${book.title}</div>
                         <div class="text-xs text-gray-400">${book.author}</div>
@@ -264,7 +264,7 @@ async function loadSlider() {
             const isActive = slide.active === 'TRUE' || slide.active === true;
             return `
             <div class="glass p-4 rounded-xl border ${isActive ? 'border-green-500/30' : 'border-red-500/30'} flex flex-col md:flex-row gap-4 items-center">
-                <img src="${slide.image_url}" class="w-32 h-20 object-cover rounded-lg border border-white/10" onerror="this.src='https://via.placeholder.com/150x80'">
+                <img src="${getImageUrl(slide.image_url)}" class="w-32 h-20 object-cover rounded-lg border border-white/10" onerror="this.src='https://via.placeholder.com/150x80'">
                 <div class="flex-1 text-center md:text-right">
                     <h4 class="font-bold text-lg text-white">${slide.title || 'بدون عنوان'}</h4>
                     <p class="text-sm text-gray-400">${slide.subtitle || ''}</p>
@@ -504,4 +504,27 @@ async function updateStatus(id, newStatus) {
         }
         renderOrders(allOrdersData); 
     } catch(e) { showToast('فشل التحديث', 'error'); }
+}
+function getImageUrl(url) {
+    if (!url) return 'https://placehold.co/300x450?text=No+Image';
+    
+    // استخراج ID الملف سواء كان الرابط يحتوي على /d/ أو id=
+    let id = '';
+    
+    // الحالة الأولى: رابط مشاركة عادي (.../d/ID/...)
+    const part1 = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (part1 && part1[1]) id = part1[1];
+    
+    // الحالة الثانية: رابط مباشر (...?id=ID)
+    if (!id) {
+        const part2 = url.match(/id=([a-zA-Z0-9_-]+)/);
+        if (part2 && part2[1]) id = part2[1];
+    }
+
+    // إذا وجدنا الـ ID، نستخدم رابط lh3 السريع
+    if (id) {
+        return `https://lh3.googleusercontent.com/d/${id}`;
+    }
+    
+    return url;
 }
