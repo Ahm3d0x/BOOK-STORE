@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbwpAv9y0yekyc-5ESHEetIFYCHhvbwJa-kAPuWyjdrufw7NF0RUIM7kmQG91LOINspx/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbydscDFuy-IKcjWbHkAJ0w05vF91QWxDuvyM9TqFW_AbGSwW88EwL7h7Qg3JjmMbUN0/exec';
 
 let allBooksData = [];
 let allOrdersData = [];
@@ -352,6 +352,15 @@ async function loadSettings(preloadedData = null) {
         if (!settings) {
             const res = await fetch(`${API_URL}?action=getSettings`);
             settings = await res.json();
+        }
+        if (settings.site_logo) {
+            // نستخدم دالة getImageUrl الموجودة في الملف لضمان عمل روابط الدرايف
+            const logoUrl = getImageUrl(settings.site_logo);
+            
+            const favicon = document.getElementById('favicon-icon');
+            if (favicon) {
+                favicon.href = logoUrl;
+            }
         }
         for(const [key, val] of Object.entries(settings)) {
             const el = document.getElementById('set-' + key);

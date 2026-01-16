@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
+<link rel="icon" id="favicon-icon" href="https://placehold.co/32x32?text=B">
     <title>Book.com - عالم المعرفة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -191,27 +192,49 @@
             </div>
         </section>
 
-        <section id="tracking-view" class="view-section hidden slide-in">
-            <div class="container mx-auto px-4 max-w-2xl py-10">
-                <div class="text-center mb-10">
-                    <div class="w-20 h-20 bg-gold/10 text-gold rounded-full flex items-center justify-center mx-auto mb-4 text-3xl border border-gold/20">
+<section id="tracking-view" class="view-section hidden slide-in">
+    <div class="container mx-auto px-4 max-w-7xl py-10"> <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <div id="history-sidebar-container" class="hidden lg:col-span-4 order-2 lg:order-1 sticky top-24">
+                <div class="glass p-5 rounded-2xl border border-white/10 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 border-b border-white/10 pb-3">
+                        <i class="fas fa-history text-gold"></i> سجل طلباتك
+                    </h3>
+                    <div id="history-list" class="flex flex-col gap-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                        </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 order-1 lg:order-2 w-full">
+                
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-gold/10 text-gold rounded-full flex items-center justify-center mx-auto mb-3 text-2xl border border-gold/20">
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    <h2 class="text-3xl font-bold mb-3 text-white">تتبع حالة طلبك</h2>
-                    <p class="text-gray-400">أدخل رقم الطلب الذي وصلك لمعرفة تفاصيل الشحن</p>
+                    <h2 class="text-2xl font-bold mb-2 text-white">تتبع حالة طلبك</h2>
+                    <p class="text-gray-400 text-sm">أدخل رقم الطلب لمعرفة التفاصيل</p>
                 </div>
-                <div class="glass p-8 rounded-3xl border border-white/10 shadow-2xl mb-8">
+
+                <div class="glass p-6 rounded-3xl border border-white/10 shadow-2xl mb-8">
                     <form id="tracking-form" class="flex gap-2">
                         <input type="text" name="orderId" placeholder="رقم الطلب (مثال: ORD-12345)" required 
                                class="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-center font-mono text-lg uppercase placeholder-gray-600 focus:ring-2 focus:ring-gold outline-none text-white">
-                        <button type="submit" class="bg-gold text-black w-16 rounded-xl font-bold hover:bg-yellow-500 transition shadow-lg hover:shadow-gold/50">
-                            <i class="fas fa-search text-xl"></i>
+                        <button type="submit" class="bg-gold text-black w-14 rounded-xl font-bold hover:bg-yellow-500 transition shadow-lg hover:shadow-gold/50">
+                            <i class="fas fa-search text-lg"></i>
                         </button>
                     </form>
                 </div>
+
                 <div id="tracking-result" class="hidden glass p-6 rounded-2xl border border-gold/20 animation-fade-in"></div>
+                
+                <div id="mobile-history-msg" class="lg:hidden mt-8 text-center hidden">
+                    <p class="text-gray-500 text-sm">راجع السجل في الأعلى للوصول السريع</p>
+                </div>
             </div>
-        </section>
+
+        </div>
+    </div>
+</section>
 
         <section id="checkout-view" class="view-section hidden slide-in">
             <div class="container mx-auto px-4 max-w-4xl">

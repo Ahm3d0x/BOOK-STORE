@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbwpAv9y0yekyc-5ESHEetIFYCHhvbwJa-kAPuWyjdrufw7NF0RUIM7kmQG91LOINspx/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbydscDFuy-IKcjWbHkAJ0w05vF91QWxDuvyM9TqFW_AbGSwW88EwL7h7Qg3JjmMbUN0/exec';
 
 // === State ===
 let appState = {
@@ -75,29 +75,35 @@ function updateSiteBranding() {
         document.querySelectorAll('.site-name-display').forEach(el => el.textContent = s.site_name);
     }
 
-    // تحديث اللوجو (في صفحة من نحن + الناف بار)
-    if(s.site_logo) {
-        // معالجة الرابط باستخدام دالة getImageUrl ليعمل مع جوجل درايف
-        const logoUrl = getImageUrl(s.site_logo); 
+ // داخل دالة updateSiteBranding
 
-        // 1. لوجو صفحة من نحن
-        const aboutImg = document.getElementById('about-logo-img');
-        const aboutIcon = document.getElementById('about-logo-icon');
-        if(aboutImg && aboutIcon) { 
-            aboutImg.src = logoUrl; 
-            aboutImg.classList.remove('hidden'); 
-            aboutIcon.classList.add('hidden'); 
-        }
+if(s.site_logo) {
+    const logoUrl = getImageUrl(s.site_logo); 
 
-        // 2. لوجو الناف بار (الشريط العلوي)
-        const navImg = document.getElementById('nav-logo-img');
-        const navIcon = document.getElementById('nav-logo-icon');
-        if(navImg && navIcon) {
-            navImg.src = logoUrl;
-            navImg.classList.remove('hidden');
-            navIcon.classList.add('hidden');
-        }
+    // 1. تحديث أيقونة المتصفح (Favicon) - الكود الجديد
+    const favicon = document.getElementById('favicon-icon');
+    if (favicon) {
+        favicon.href = logoUrl;
     }
+
+    // 2. تحديث لوجو صفحة من نحن
+    const aboutImg = document.getElementById('about-logo-img');
+    const aboutIcon = document.getElementById('about-logo-icon');
+    if(aboutImg && aboutIcon) { 
+        aboutImg.src = logoUrl; 
+        aboutImg.classList.remove('hidden'); 
+        aboutIcon.classList.add('hidden'); 
+    }
+
+    // 3. تحديث لوجو الناف بار
+    const navImg = document.getElementById('nav-logo-img');
+    const navIcon = document.getElementById('nav-logo-icon');
+    if(navImg && navIcon) {
+        navImg.src = logoUrl;
+        navImg.classList.remove('hidden');
+        navIcon.classList.add('hidden');
+    }
+}
 
     // باقي الكود كما هو...
     if(s.about_text) document.getElementById('about-text').innerHTML = s.about_text.replace(/\n/g, '<br>');
@@ -743,7 +749,7 @@ const order = {
             };
             appState.orders.push(newLocalOrder); // إضافة الطلب لقائمة الطلبات المحملة
             // ========================================================
-
+            saveOrderLocal(result.orderId);
             document.getElementById('success-order-id').textContent = result.orderId;
             document.getElementById('success-modal').classList.remove('hidden');
             appState.cart = [];
@@ -820,6 +826,8 @@ function router(view) {
     } else if (view === 'home') {
         renderStackSlider();
         renderFeatured();
+    }else if (view === 'tracking') { 
+        renderOrderHistory();
     }
 }
 
@@ -865,4 +873,91 @@ function toggleFilters() {
     const container = document.getElementById('filters-container');
     container.classList.toggle('hidden');
     container.classList.toggle('grid'); // للتبديل بين الإخفاء ونظام الشبكة
+}
+// === Local Order History Logic ===
+
+// 1. دالة لحفظ الطلب في اللوكال ستوريج
+function saveOrderLocal(orderId) {
+    let history = JSON.parse(localStorage.getItem('myOrderHistory') || '[]');
+    const date = new Date().toLocaleDateString('en-GB'); // التاريخ بتنسيق يوم/شهر/سنة
+    
+    // التحقق من عدم تكرار الطلب
+    if (!history.find(o => o.id === orderId)) {
+        // إضافة الطلب الجديد في بداية المصفوفة
+        history.unshift({ id: orderId, date: date });
+        // حفظ المصفوفة
+        localStorage.setItem('myOrderHistory', JSON.stringify(history));
+    }
+    // تحديث العرض إذا كنا في صفحة التتبع
+    renderOrderHistory();
+}
+
+// استبدل دالة renderOrderHistory بهذا الكود الجديد
+function renderOrderHistory() {
+    // تحديد العناصر الجديدة
+    const sidebar = document.getElementById('history-sidebar-container');
+    const container = document.getElementById('history-list'); // الحاوية داخل السايد بار
+    
+    // جلب البيانات
+    const history = JSON.parse(localStorage.getItem('myOrderHistory') || '[]');
+
+    // إذا لم يكن هناك سجل، نخفي السايد بار
+    if (history.length === 0) {
+        if(sidebar) sidebar.classList.add('hidden');
+        return;
+    }
+
+    // إظهار السايد بار
+    if(sidebar) sidebar.classList.remove('hidden');
+
+    // تعبئة البيانات بتصميم مضغوط (Compact) يناسب القائمة الجانبية
+    if(container) {
+        container.innerHTML = history.map(item => `
+            <div class="bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 transition cursor-pointer group relative overflow-hidden" onclick="trackFromHistory('${item.id}')">
+                
+                <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center text-gold text-xs shrink-0">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="font-bold text-white text-xs font-mono truncate">${item.id}</div>
+                            <div class="text-[14px] text-orange-500">${item.date}</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="event.stopPropagation(); deleteOrderFromHistory('${item.id}')" class="text-gray-600 hover:text-red-500 transition px-2" title="حذف">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+                
+                <div class="absolute inset-0 bg-gold/5 translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+            </div>
+        `).join('');
+    }
+}
+
+// 3. دالة الحذف من السجل
+function deleteOrderFromHistory(id) {
+    if(!confirm('هل تريد حذف هذا الطلب من سجلك المحلي؟')) return;
+    
+    let history = JSON.parse(localStorage.getItem('myOrderHistory') || '[]');
+    history = history.filter(item => item.id !== id);
+    localStorage.setItem('myOrderHistory', JSON.stringify(history));
+    
+    renderOrderHistory();
+    showToast('تم الحذف من السجل', 'info');
+}
+
+// 4. دالة التتبع المباشر عند الضغط
+function trackFromHistory(id) {
+    const input = document.querySelector('#tracking-form input[name="orderId"]');
+    if(input) {
+        input.value = id;
+        trackOrder(id);
+        // سكرول ناعم لنتيجة البحث
+        setTimeout(() => {
+            document.getElementById('tracking-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
 }
