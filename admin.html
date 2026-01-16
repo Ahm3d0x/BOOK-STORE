@@ -11,9 +11,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-900 text-white font-cairo overflow-hidden h-screen">
+<body class="bg-gray-900 text-white font-cairo overflow-hidden h-screen flex flex-col md:flex-row">
 
-    <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4">
         <div class="glass p-8 rounded-2xl w-full max-w-md text-center border border-white/10 shadow-2xl">
             <div class="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl">
@@ -25,27 +24,37 @@
         </div>
     </div>
 
-    <div id="admin-panel" class="hidden h-full flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <aside class="w-full md:w-64 bg-[#111] border-l border-white/5 p-4 flex flex-col gap-2 shrink-0 z-20 shadow-xl overflow-y-auto">
-            <div class="text-center mb-6 py-4 border-b border-white/5">
-                <h1 class="text-2xl font-bold text-gold">لوحة الإدارة</h1>
-                <p class="text-xs text-gray-500">نظام إدارة المكتبة v2.3</p>
+    <div id="mobile-header" class="md:hidden bg-[#111] border-b border-white/5 p-4 flex justify-between items-center z-30 hidden">
+        <h1 class="text-xl font-bold text-gold">لوحة الإدارة</h1>
+        <button onclick="toggleSidebar()" class="text-white text-2xl"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <div id="admin-panel" class="hidden flex-1 flex flex-col md:flex-row h-full relative overflow-hidden">
+        
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+        <aside id="admin-sidebar" class="fixed inset-y-0 right-0 w-64 bg-[#111] border-l border-white/5 p-4 flex flex-col gap-2 z-50 shadow-2xl transform translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
+            <div class="flex justify-between items-center mb-6 py-4 border-b border-white/5">
+                <div>
+                    <h1 class="text-2xl font-bold text-gold">لوحة الإدارة</h1>
+                    <p class="text-xs text-gray-500">نظام إدارة المكتبة v3.0</p>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <button onclick="switchTab('add-book')" class="admin-tab-btn active text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+            <button onclick="switchTab('add-book'); toggleSidebar(false)" class="admin-tab-btn active text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-plus-circle text-gold w-6"></i> إضافة كتاب
             </button>
-            <button onclick="switchTab('inventory')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+            <button onclick="switchTab('inventory'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-boxes text-blue-400 w-6"></i> المخزون
             </button>
-            <button onclick="switchTab('orders')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+            <button onclick="switchTab('orders'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-shopping-bag text-green-400 w-6"></i> الطلبات
             </button>
-            <button onclick="switchTab('slider')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+            <button onclick="switchTab('slider'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-images text-pink-400 w-6"></i> إدارة العروض
             </button>
-            <button onclick="switchTab('settings')" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+            <button onclick="switchTab('settings'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-sliders-h text-purple-400 w-6"></i> الإعدادات
             </button>
             
@@ -56,10 +65,7 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto bg-dark relative custom-scrollbar">
-            
-            <!-- SECTION: ADD BOOK -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto bg-dark relative custom-scrollbar w-full">
             <section id="tab-add-book" class="admin-section max-w-4xl mx-auto">
                 <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
                     <span class="text-gold">#</span> إضافة كتاب جديد
@@ -135,9 +141,7 @@
                     </button>
                 </form>
             </section>
-
-            <!-- SECTION: INVENTORY -->
-            <section id="tab-inventory" class="admin-section hidden max-w-6xl mx-auto">
+             <section id="tab-inventory" class="admin-section hidden max-w-6xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-3xl font-bold">إدارة المخزون</h2>
                     <div class="flex gap-2 w-full max-w-md">
@@ -162,9 +166,8 @@
                     </div>
                 </div>
             </section>
-
-            <!-- SECTION: ORDERS (Table View) -->
-            <section id="tab-orders" class="admin-section hidden max-w-7xl mx-auto">
+            
+             <section id="tab-orders" class="admin-section hidden max-w-7xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                     <h2 class="text-3xl font-bold">الطلبات الواردة</h2>
                     <div class="flex gap-2 w-full max-w-lg">
@@ -192,14 +195,12 @@
                                 </tr>
                             </thead>
                             <tbody id="orders-table-body" class="divide-y divide-white/5 text-sm">
-                                <!-- Rows loaded via JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                 </div>
             </section>
-
-            <!-- SECTION: SLIDER -->
+            
             <section id="tab-slider" class="admin-section hidden max-w-4xl mx-auto">
                 <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
                     <span class="text-pink-500">#</span> إدارة العروض (Slider)
@@ -219,8 +220,7 @@
                 </div>
             </section>
 
-            <!-- SECTION: SETTINGS -->
-            <section id="tab-settings" class="admin-section hidden max-w-2xl mx-auto">
+             <section id="tab-settings" class="admin-section hidden max-w-2xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8 text-center">إعدادات الموقع</h2>
                 <form id="settings-form" class="glass p-8 rounded-2xl space-y-6">
                     <div class="space-y-4">
@@ -248,11 +248,9 @@
                     <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold hover:bg-blue-500 shadow-lg transition">حفظ التغييرات</button>
                 </form>
             </section>
-
         </main>
     </div>
 
-    <!-- Edit Book Modal -->
     <div id="edit-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass w-full max-w-4xl p-6 rounded-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h3 class="text-xl font-bold mb-4">تعديل بيانات الكتاب</h3>
@@ -296,10 +294,52 @@
         </div>
     </div>
 
-    <!-- Order Details Modal (تمت إضافته لإصلاح المشكلة) -->
+    <div id="edit-slider-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass w-full max-w-lg p-6 rounded-2xl">
+            <h3 class="text-xl font-bold mb-4 text-pink-400">تعديل العرض</h3>
+            <form id="edit-slider-form" class="space-y-4">
+                <input type="hidden" name="id">
+                <input type="hidden" name="active">
+                <div>
+                    <label class="text-xs text-gray-400 mb-1">العنوان</label>
+                    <input type="text" name="title" class="input-field" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1">العنوان الفرعي</label>
+                    <input type="text" name="subtitle" class="input-field">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1">الصورة</label>
+                    <input type="text" name="image_url" class="input-field" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1">الرابط</label>
+                    <input type="text" name="link" class="input-field">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 bg-pink-600 hover:bg-pink-500 py-2 rounded-lg font-bold">حفظ</button>
+                    <button type="button" onclick="document.getElementById('edit-slider-modal').classList.add('hidden')" class="flex-1 bg-gray-700 py-2 rounded-lg font-bold">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-black/90 z-[150] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center border border-red-500/30 transform scale-95 opacity-0 transition-all duration-300" id="confirm-box">
+            <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">هل أنت متأكد؟</h3>
+            <p id="confirm-message" class="text-gray-400 mb-6 text-sm">لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="flex gap-3">
+                <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl font-bold transition">نعم، تابع</button>
+                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl font-bold transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
     <div id="order-details-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass w-full max-w-3xl p-0 rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
-            <!-- Header -->
             <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
                 <div>
                     <h3 class="text-xl font-bold text-white flex items-center gap-2">
@@ -310,10 +350,8 @@
                 <button onclick="document.getElementById('order-details-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
             </div>
             
-            <!-- Body -->
             <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
                 
-                <!-- Status & Dates -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
                     <div>
                         <span class="text-gray-400 text-xs block mb-1">الحالة الحالية</span>
@@ -325,7 +363,6 @@
                     </div>
                 </div>
 
-                <!-- Customer Info -->
                 <div class="space-y-3">
                     <h4 class="text-gold font-bold border-b border-white/10 pb-2">بيانات العميل</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -336,30 +373,25 @@
                     </div>
                 </div>
 
-                <!-- Items -->
                 <div class="space-y-3">
                     <h4 class="text-gold font-bold border-b border-white/10 pb-2">المنتجات المطلوبة</h4>
                     <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5">
-                        <!-- Items list injected here -->
-                    </div>
+                        </div>
                     <div class="flex justify-end pt-2">
                         <div class="text-lg font-bold">الإجمالي: <span id="modal-order-total" class="text-gold">0</span></div>
                     </div>
                 </div>
 
-                <!-- Order History (Timeline) -->
                 <div class="space-y-3">
                     <h4 class="text-gold font-bold border-b border-white/10 pb-2">سجل الحالات</h4>
                     <div class="space-y-2 text-sm" id="modal-order-history">
-                        <!-- History injected here -->
-                    </div>
+                        </div>
                 </div>
 
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast-container" class="fixed bottom-6 left-6 z-[100] flex flex-col gap-2"></div>
 
     <script src="admin.js"></script>

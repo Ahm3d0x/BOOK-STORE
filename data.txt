@@ -1,6 +1,5 @@
 // انسخ هذا الكود بالكامل وضعه في محرر Apps Script
 const SHEET_ID = ''; // اتركه فارغاً ليستخدم الشيت الحالي
-
 function doGet(e) {
   const action = e.parameter.action;
   const db = getDb();
@@ -252,6 +251,47 @@ function doPost(e) {
         result = { success: true, message: 'تم حذف الشريحة' };
         break;
 
+      case 'updateOrderStatus':
+        const ordersSheet = db.orders;
+        const ordersData = ordersSheet.getDataRange().getValues();
+        const headers = ordersData[0]; // رؤوس الأعمدة
+        
+        // البحث عن فهارس الأعمدة
+        const idIndex = headers.indexOf('order_id');
+        const statusIndex = headers.indexOf('status');
+        
+        // البحث عن الصف الخاص بالطلب
+        let orderFound = false;
+        for (let i = 1; i < ordersData.length; i++) {
+          if (String(ordersData[i][idIndex]) === String(data.order_id)) {
+            
+            // 1. تحديث عمود الحالة (Status)
+            ordersSheet.getRange(i + 1, statusIndex + 1).setValue(data.status);
+            
+            // 2. تحديث عمود التاريخ المناسب بناءً على الحالة الجديدة
+            let dateColName = '';
+            if (data.status === 'جاري التحضير') dateColName = 'date_preparing';
+            else if (data.status === 'تم الشحن') dateColName = 'date_shipped';
+            else if (data.status === 'تم التسليم') dateColName = 'date_delivered';
+            else if (data.status === 'ملغي') dateColName = 'date_cancelled';
+            
+            if (dateColName) {
+              const dateColIndex = headers.indexOf(dateColName);
+              // التأكد من أن العمود موجود
+              if (dateColIndex > -1) {
+                const currentDate = new Date().toLocaleString('en-GB'); // تاريخ ووقت اليوم
+                ordersSheet.getRange(i + 1, dateColIndex + 1).setValue(currentDate);
+              }
+            }
+            
+            orderFound = true;
+            result = { success: true, message: 'تم تحديث الحالة والتاريخ' };
+            break;
+          }
+        }
+        if (!orderFound) result = { error: 'Order not found' };
+        break;
+      // ===========================================
       default:
         result = { error: 'Invalid Action' };
     }
