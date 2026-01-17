@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbzsD6YKBKnbQ7wXgnOmv8WG3LcQa9sPC_tbHOyGcJWZbQ3zyWTBfu_2dtlRh5CLLBAg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw6rMbPKO0Zz4vAeRnSWSLVdSJ67B-a-eoPliy3RCoOOjuyc5OiFTgDo2kdWpl7UlUc/exec';
 
 
 // === Global Variables ===
@@ -127,9 +127,15 @@ function switchTab(tabId) {
 
     if(tabId === 'inventory') loadInventory();
     if(tabId === 'orders') loadOrders();
-    if(tabId === 'slider') loadSlider(); 
+    
+    // ✅ هذا هو التعديل المهم: استدعاء دالة الكوبونات عند فتح السلايدر
+    if(tabId === 'slider') {
+        loadSlider();
+        populateSliderCoupons(); 
+    }
+    
+    if(tabId === 'coupons') loadCoupons();
 }
-
 // === Toast & Confirm Modal Utilities ===
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -330,11 +336,11 @@ function deleteBook(id) {
     });
 }
 
-// === SLIDER MANAGEMENT ===
 async function loadSlider() {
     const container = document.getElementById('slider-list-container');
     if(!container) return;
     container.innerHTML = '<div class="loader mx-auto"></div>';
+    
     try {
         const res = await fetch(`${API_URL}?action=getSlider`);
         const sliders = await res.json();
@@ -347,31 +353,47 @@ async function loadSlider() {
 
         container.innerHTML = sliders.map(slide => {
             const isActive = slide.active === 'TRUE' || slide.active === true;
-            // تجهيز البيانات لتمريرها للدالة بأمان
+            
+            // تجهيز البيانات لتمريرها للدالة بأمان (التعامل مع علامات التنصيص)
             const slideData = JSON.stringify(slide).replace(/"/g, '&quot;');
             
             return `
             <div class="glass p-4 rounded-xl border ${isActive ? 'border-green-500/30' : 'border-red-500/30'} flex flex-col md:flex-row gap-4 items-center">
                 <img src="${getImageUrl(slide.image_url)}" class="w-32 h-20 object-cover rounded-lg border border-white/10" onerror="this.src='https://via.placeholder.com/150x80'">
+                
                 <div class="flex-1 text-center md:text-right">
-                    <h4 class="font-bold text-lg text-white">${slide.title || 'بدون عنوان'}</h4>
+                    <div class="flex items-center justify-center md:justify-start gap-2 mb-1">
+                        <h4 class="font-bold text-lg text-white">${slide.title || 'بدون عنوان'}</h4>
+                        ${slide.coupon_code ? `
+                            <span class="text-[10px] bg-yellow-500/10 text-yellow-400 px-2 py-0.5 rounded border border-yellow-500/20 flex items-center gap-1">
+                                <i class="fas fa-tag"></i> ${slide.coupon_code}
+                            </span>
+                        ` : ''}
+                    </div>
+                    
                     <p class="text-sm text-gray-400">${slide.subtitle || ''}</p>
-                    ${slide.link ? `<a href="${slide.link}" target="_blank" class="text-xs text-blue-400 hover:underline truncate block max-w-[200px]">${slide.link}</a>` : ''}
+                    
+                    ${slide.link ? `<a href="${slide.link}" target="_blank" class="text-xs text-blue-400 hover:underline truncate block max-w-[200px] mt-1" dir="ltr">${slide.link}</a>` : ''}
                 </div>
+
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleSlider('${slide.id}', ${!isActive})" class="${isActive ? 'bg-green-600' : 'bg-red-600'} text-white text-xs px-3 py-1 rounded-full font-bold h-8">
+                    <button onclick="toggleSlider('${slide.id}', ${!isActive})" class="${isActive ? 'bg-green-600' : 'bg-red-600'} text-white text-xs px-3 py-1 rounded-full font-bold h-8 transition hover:opacity-80">
                         ${isActive ? 'مفعل' : 'معطل'}
                     </button>
-                    <button onclick="openEditSliderModal(${slideData})" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg transition">
+                    
+                    <button onclick="openEditSliderModal(${slideData})" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg transition" title="تعديل">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteSlider('${slide.id}')" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg transition">
+                    
+                    <button onclick="deleteSlider('${slide.id}')" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg transition" title="حذف">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
         `}).join('');
+        
     } catch(err) {
+        console.error(err);
         container.innerHTML = '<div class="text-center text-red-500">فشل تحميل السلايدر</div>';
     }
 }
@@ -407,11 +429,12 @@ document.getElementById('add-slider-form').addEventListener('submit', async (e) 
     }
 });
 
-// دوال تعديل السلايدر
+
 function openEditSliderModal(slide) {
     const form = document.getElementById('edit-slider-form');
     if(!form) return;
     
+    // تعبئة البيانات مباشرة
     form.id.value = slide.id;
     form.active.value = slide.active;
     form.title.value = slide.title || '';
@@ -419,6 +442,12 @@ function openEditSliderModal(slide) {
     form.image_url.value = slide.image_url || '';
     form.link.value = slide.link || '';
     
+    // تحديد الكوبون المختار (القائمة ممتلئة مسبقاً من switchTab)
+    if (form.coupon_code) {
+        form.coupon_code.value = slide.coupon_code || '';
+    }
+    
+    // إظهار المودال فوراً
     const modal = document.getElementById('edit-slider-modal');
     if(modal) modal.classList.remove('hidden');
 }
@@ -599,7 +628,8 @@ function filterOrders(term) {
     renderOrders(filtered);
 }
 
-// [admin.js] دالة عرض التفاصيل المحدثة
+
+// [admin.js] دالة عرض تفاصيل الطلب (محدثة لدعم الخصم)
 function viewOrderDetails(orderId) {
     const order = allOrdersData.find(o => String(o.order_id) === String(orderId));
     if (!order) return;
@@ -615,10 +645,9 @@ function viewOrderDetails(orderId) {
     document.getElementById('modal-customer-email').innerText = order.email || '-';
     document.getElementById('modal-customer-address').innerText = order.address;
 
-    // 3. المنتجات (التحديث الجديد: تقسيم النص وعرضه كقائمة)
+    // 3. المنتجات
     const itemsContainer = document.getElementById('modal-order-items');
     if (order.items) {
-        // تحويل النص "Book A (x1) | Book B (x2)" إلى HTML
         const itemsList = order.items.split(' | ');
         itemsContainer.innerHTML = itemsList.map(item => `
             <div class="flex items-center gap-2 p-2 bg-white/5 rounded border border-white/5">
@@ -630,16 +659,32 @@ function viewOrderDetails(orderId) {
         itemsContainer.innerHTML = '<span class="text-gray-500 italic">لا توجد منتجات</span>';
     }
 
-    // 4. الحسابات المالية
+    // 4. الحسابات المالية (تم التحديث هنا لإظهار الخصم) 💰
     const total = parseFloat(order.total_price) || 0;
     const shipping = parseFloat(order.shipping_cost) || 0;
-    // إذا لم يكن سعر الكتب محفوظاً، نستنتجه
-    const booksPrice = parseFloat(order.books_price) || (total - shipping);
+    const discount = parseFloat(order.discount_amount) || 0;
+    
+    // حساب سعر الكتب: إذا لم يكن محفوظاً، نستنتجه (الإجمالي + الخصم - الشحن)
+    const booksPrice = parseFloat(order.books_price) || (total + discount - shipping);
 
     document.getElementById('modal-books-price').innerText = booksPrice + ' ج.م';
     document.getElementById('modal-order-gov').innerText = order.governorate || 'غير محدد';
     document.getElementById('modal-shipping-cost').innerText = shipping + ' ج.م';
     document.getElementById('modal-order-total-final').innerText = total + ' ج.م';
+
+    // التعامل مع سطر الخصم (إظهار/إخفاء)
+    const discountRow = document.getElementById('modal-discount-row');
+    if (discount > 0) {
+        // إذا وجد خصم، نعرض السطر ونملأ البيانات
+        discountRow.classList.remove('hidden');
+        discountRow.classList.add('flex'); // لضمان تنسيق الـ flex
+        document.getElementById('modal-coupon-code').innerText = order.coupon_code || '';
+        document.getElementById('modal-discount-amount').innerText = '-' + discount + ' ج.م';
+    } else {
+        // إذا لا يوجد خصم، نخفي السطر تماماً
+        discountRow.classList.add('hidden');
+        discountRow.classList.remove('flex');
+    }
 
     // 5. سجل الحالات (Timeline)
     let historyHtml = '';
@@ -658,7 +703,6 @@ function viewOrderDetails(orderId) {
     // إظهار المودال
     document.getElementById('order-details-modal').classList.remove('hidden');
 }
-
 // دالة مساعدة صغيرة لرسم عناصر التايم لاين
 function historyItem(label, date, color) {
     const colors = {
@@ -747,4 +791,141 @@ function deleteOrderFinal(orderId) {
             if(btn) btn.innerHTML = oldText;
         }
     });
+}
+
+// إخفاء حقل "القيمة" إذا كان النوع شحن مجاني
+function toggleCouponFields(type) {
+    const valField = document.getElementById('coupon-value-field');
+    const maxField = document.getElementById('coupon-max-field');
+    
+    if (type === 'free_shipping') {
+        valField.style.display = 'none';
+        valField.value = 0;
+    } else {
+        valField.style.display = 'block';
+    }
+
+    if (type === 'percent') {
+        maxField.style.display = 'block';
+    } else {
+        maxField.style.display = 'none';
+    }
+}
+// === إدارة الكوبونات ===
+async function loadCoupons() {
+    const tbody = document.getElementById('coupons-table-body');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8"><div class="loader mx-auto"></div></td></tr>';
+
+    try {
+        const res = await fetch(`${API_URL}?action=getCoupons`);
+        const coupons = await res.json();
+        
+        if(!coupons.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-500">لا توجد كوبونات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = coupons.map(c => `
+            <tr class="hover:bg-white/5 transition">
+                <td class="p-4 font-mono font-bold text-yellow-400 tracking-wider">${c.code}</td>
+                <td class="p-4 text-xs text-gray-300">
+                    ${c.type === 'percent' ? 'نسبة مئوية' : c.type === 'free_shipping' ? 'شحن مجاني' : 'مبلغ ثابت'}
+                </td>
+                <td class="p-4 font-bold text-white">
+                    ${c.type === 'percent' ? c.value + '%' : c.type === 'free_shipping' ? 'مجاني' : c.value + ' ج.م'}
+                </td>
+                <td class="p-4 text-xs">
+                    <span class="${c.usage_count >= c.usage_limit && c.usage_limit > 0 ? 'text-red-400' : 'text-green-400'}">
+                        ${c.usage_count} / ${c.usage_limit || '∞'}
+                    </span>
+                </td>
+                <td class="p-4 text-xs text-gray-400">${c.expiry_date ? c.expiry_date.split('T')[0] : 'مفتوح'}</td>
+                <td class="p-4 text-center">
+                    <button onclick="deleteCoupon('${c.id}')" class="text-red-500 hover:text-red-400 bg-red-500/10 p-2 rounded-lg transition">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+        
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-400">خطأ في التحميل</td></tr>';
+    }
+}
+
+// إضافة كوبون جديد
+document.getElementById('add-coupon-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const oldText = btn.innerText;
+    btn.innerText = 'جاري الإنشاء...';
+    btn.disabled = true;
+
+    try {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        data.active = 'TRUE'; // تفعيل افتراضي
+
+        const res = await fetch(`${API_URL}?action=addCoupon`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if(result.success) {
+            showToast('تم إنشاء الكوبون بنجاح', 'success');
+            e.target.reset();
+            loadCoupons();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch(err) {
+        showToast('فشل العملية: ' + err.message, 'error');
+    } finally {
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+});
+
+// حذف كوبون
+function deleteCoupon(id) {
+    showConfirm('حذف هذا الكوبون نهائياً؟', async () => {
+        try {
+            await fetch(`${API_URL}?action=deleteCoupon`, {
+                method: 'POST',
+                body: JSON.stringify({ id: id })
+            });
+            showToast('تم الحذف', 'success');
+            loadCoupons();
+        } catch(e) { showToast('فشل الحذف', 'error'); }
+    });
+}
+
+
+async function populateSliderCoupons() {
+    const selects = document.querySelectorAll('.slider-coupon-select');
+    if (!selects.length) return;
+    selects.forEach(s => s.innerHTML = '<option>جاري التحميل...</option>');
+    try {
+        const res = await fetch(`${API_URL}?action=getCoupons`);
+        const coupons = await res.json();
+        let optionsHtml = `<option value="">-- بدون كوبون --</option>`;
+        if (Array.isArray(coupons) && coupons.length > 0) {
+            optionsHtml += coupons
+                .filter(c => String(c.active).toUpperCase().trim() === 'TRUE')
+                .map(c => `<option value="${c.code}">${c.code} (${c.type === 'percent' ? c.value + '%' : c.value + ' ج.م'})</option>`)
+                .join('');
+        }
+
+        selects.forEach(select => {
+            const oldVal = select.value; 
+            select.innerHTML = optionsHtml;
+            if(oldVal) select.value = oldVal;
+        });
+
+    } catch (e) {
+        console.error(e);
+        selects.forEach(s => s.innerHTML = '<option value="">فشل التحميل</option>');
+    }
 }

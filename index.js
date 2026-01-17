@@ -1,7 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbzsD6YKBKnbQ7wXgnOmv8WG3LcQa9sPC_tbHOyGcJWZbQ3zyWTBfu_2dtlRh5CLLBAg/exec';
-
-// === State ===
+const API_URL = 'https://script.google.com/macros/s/AKfycbw6rMbPKO0Zz4vAeRnSWSLVdSJ67B-a-eoPliy3RCoOOjuyc5OiFTgDo2kdWpl7UlUc/exec';
 let appState = {
     books: [],
     settings: {},
@@ -10,38 +8,39 @@ let appState = {
     currentView: 'home',
     orders: [],
     currentSlideIndex: 0,
-    sliderTimer: null // Variable to hold the timer
+    sliderTimer: null,
+    activeCoupon: null
 };
 
 const SHIPPING_RATES = {
     "كفر صقر":20,
     "الشرقية": 35,
-    "القاهرة": 50,
-    "الجيزة": 50,
-    "الإسكندرية": 55,
-    "الدقهلية": 45,
-    "القليوبية": 45,
-    "المنوفية": 45,
-    "الغربية": 45,
-    "بورسعيد": 55,
-    "الإسماعيلية": 50,
-    "السويس": 50,
-    "كفر الشيخ": 55,
-    "البحيرة": 55,
-    "دمياط": 55,
-    "الفيوم": 60,
-    "بني سويف": 60,
-    "المنيا": 70,
-    "أسيوط": 70,
-    "سوهاج": 75,
-    "قنا": 80,
-    "الأقصر": 85,
-    "أسوان": 90,
-    "مطروح": 95,
-    "الوادي الجديد": 100,
+    "القاهرة": 55,
+    "الجيزة": 55,
+    "الإسكندرية": 65,
+    "الدقهلية": 55,
+    "القليوبية": 55,
+    "المنوفية": 55,
+    "الغربية": 55,
+    "بورسعيد": 65,
+    "الإسماعيلية": 55,
+    "السويس": 65,
+    "كفر الشيخ": 65,
+    "البحيرة": 65,
+    "دمياط": 65,
+    "الفيوم": 65,
+    "بني سويف": 65,
+    "المنيا": 80,
+    "أسيوط": 90,
+    "سوهاج": 100,
+    "قنا": 105,
+    "الأقصر": 105,
+    "أسوان": 105,
+    "مطروح": 90,
+    "الوادي الجديد": 105,
     "البحر الأحمر": 100,
-    "شمال سيناء": 100,
-    "جنوب سيناء": 100
+    "شمال سيناء": 70,
+    "جنوب سيناء": 80
 };
 // === Init ===
 document.addEventListener('DOMContentLoaded', async () => {
@@ -191,19 +190,46 @@ function renderStackSlider() {
         return;
     }
 
-    container.innerHTML = activeSlides.map((slide, index) => `
+
+container.innerHTML = activeSlides.map((slide, index) => {
+    // التحقق من وجود كوبون
+    const hasCoupon = slide.coupon_code && slide.coupon_code.trim() !== '';
+    
+    return `
         <div class="card-stack-item glass rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing border border-white/10" id="slide-${index}" 
              style="z-index: ${activeSlides.length - index};">
+            
             <img src="${getImageUrl(slide.image_url)}" class="w-full h-full object-cover mix-blend-overlay" onerror="this.src='https://placehold.co/800x400?text=Offer'">
-             <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+            
             <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 flex flex-col items-start">
-                <span class="bg-gold text-black px-4 py-1 rounded-full text-xs font-bold mb-4 inline-block shadow-lg uppercase tracking-wider">مميز</span>
+                
+                <div class="flex gap-2 mb-4">
+                    <span class="bg-gold text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider">مميز</span>
+                    
+                    ${hasCoupon ? `
+                    <div class="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-1 pr-3 py-0.5 gap-2 cursor-pointer hover:bg-white/20 transition group" onclick="copyCoupon('${slide.coupon_code}')">
+                        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">كوبون</span>
+                        <span class="font-mono text-gold font-bold tracking-wider text-xs">${slide.coupon_code}</span>
+                        <i class="far fa-copy text-gray-400 text-xs group-hover:text-white"></i>
+                    </div>` : ''}
+                </div>
+
                 <h2 class="text-4xl md:text-6xl font-black mb-4 leading-tight text-white drop-shadow-2xl">${slide.title}</h2>
                 <p class="text-xl text-gray-200 mb-8 max-w-xl drop-shadow-md leading-relaxed">${slide.subtitle || ''}</p>
+                
                 ${slide.link ? `<a href="${slide.link}" target="_blank" class="inline-block bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gold transition transform hover:-translate-y-1 shadow-xl">تصفح العرض</a>` : ''}
             </div>
         </div>
-    `).join('');
+    `;
+}).join('');
+
+// [أضف هذه الدالة المساعدة في أي مكان في index.js]
+function copyCoupon(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast(`تم نسخ الكوبون: ${code}`, 'success');
+    });
+}
     
     // Add Indicators
     const indContainer = document.getElementById('slider-indicators');
@@ -579,7 +605,8 @@ document.getElementById('tracking-form').addEventListener('submit', (e) => {
     const orderId = e.target.orderId.value.trim().toUpperCase();
     trackOrder(orderId);
 });
-// [في ملف index.js] استبدل دالة trackOrder بهذا الكود المحدث
+
+// [index.js] تحديث دالة تتبع الطلب (trackOrder)
 function trackOrder(orderId) {
     const resultDiv = document.getElementById('tracking-result');
     const order = appState.orders.find(o => String(o.order_id).toUpperCase() === orderId);
@@ -590,10 +617,13 @@ function trackOrder(orderId) {
         return;
     }
 
-    // --- 1. الحسابات المالية ---
+    // --- 1. الحسابات المالية (محدثة لتعرض الخصم بدقة) ---
     const total = parseFloat(order.total_price) || 0;
     const shipping = parseFloat(order.shipping_cost) || 0;
-    const booksPrice = parseFloat(order.books_price) || (total - shipping);
+    const discount = parseFloat(order.discount_amount) || 0;
+    
+    // الأولوية للسعر المسجل في الشيت، لو مش موجود نحسبه (الإجمالي + الخصم - الشحن)
+    const booksPrice = parseFloat(order.books_price) || (total + discount - shipping);
 
     // --- 2. التايم لاين (Timeline) ---
     const steps = [
@@ -615,12 +645,22 @@ function trackOrder(orderId) {
             </div>
         `;
     } else {
+        // تحديد المرحلة الحالية لتلوين الخط
+        let currentStepIndex = -1;
+        steps.forEach((step, index) => {
+            if (order.status.includes(step.status) || step.date) currentStepIndex = index;
+        });
+
         timelineHtml = `<div class="relative flex flex-col md:flex-row justify-between items-start w-full my-8 px-2 md:px-4">
             <div class="absolute left-8 md:left-0 top-0 md:top-5 w-1 md:w-full h-full md:h-1 bg-gray-800 -z-10 md:mx-4"></div>
+            
+            <div class="hidden md:block absolute left-0 top-5 h-1 bg-green-600/50 -z-10 transition-all duration-1000" style="width: ${(currentStepIndex / (steps.length - 1)) * 100}%"></div>
         `;
-        steps.forEach((step) => {
-            const isDone = !!step.date;
+        
+        steps.forEach((step, index) => {
+            const isDone = !!step.date || index <= currentStepIndex;
             const colorClass = isDone ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-[#1a1a1a] text-gray-600 border border-gray-700';
+            
             timelineHtml += `
                 <div class="flex md:flex-col items-center gap-6 md:gap-3 w-full md:w-auto mb-8 md:mb-0">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass} z-10 transition-all duration-500 relative">
@@ -642,8 +682,6 @@ function trackOrder(orderId) {
     if (order.items) {
         const itemsList = order.items.split(' | ');
         itemsHtml = itemsList.map(itemStr => {
-            // محاولة استخراج الاسم والكمية والسعر
-            // الصيغة المتوقعة: "اسم الكتاب (x1)"
             let title = itemStr;
             let qty = 1;
             let priceDisplay = '';
@@ -654,14 +692,14 @@ function trackOrder(orderId) {
                 qty = parseInt(qtyMatch[2]);
             }
 
-            // البحث عن الكتاب في البيانات الحالية لجلب سعره (محاولة ذكية)
             const book = appState.books.find(b => b.title.trim() === title.trim());
             if(book) {
-                // حساب السعر بناءً على الخصم الحالي
+                // نعرض السعر الأصلي للكتاب هنا (بدون حساب خصم الكوبون عليه، لأن خصم الكوبون يظهر في الفاتورة النهائية)
+                // لكن إذا كان الكتاب نفسه عليه خصم (Discount) نحسبه
                 const price = parseFloat(book.price);
-                const discount = parseFloat(book.discount) || 0;
-                const finalPrice = price - discount;
-                const totalItemPrice = finalPrice * qty;
+                const bookDiscount = parseFloat(book.discount) || 0; 
+                const finalItemPrice = price - bookDiscount; 
+                const totalItemPrice = finalItemPrice * qty;
                 priceDisplay = `<span class="text-gold font-mono font-bold">${totalItemPrice} ج.م</span>`;
             } else {
                 priceDisplay = `<span class="text-gray-600 text-xs">--</span>`;
@@ -688,7 +726,17 @@ function trackOrder(orderId) {
         itemsHtml = '<div class="text-gray-500 text-sm py-4 text-center">لا توجد تفاصيل للمنتجات</div>';
     }
 
-    // --- 4. الهيكل النهائي (Grid Layout) ---
+    // --- 4. تجهيز سطر الخصم (HTML) ---
+    let discountRowHtml = '';
+    if (discount > 0) {
+        discountRowHtml = `
+        <div class="flex justify-between items-center text-sm bg-green-900/10 p-2 rounded border border-green-500/10 mt-2">
+            <span class="text-green-400">خصم كوبون (${order.coupon_code || ''})</span>
+            <span class="text-green-400 font-medium font-mono">-${discount} ج.م</span>
+        </div>`;
+    }
+
+    // --- 5. الهيكل النهائي ---
     resultDiv.innerHTML = `
         <div class="animate-fade-in">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
@@ -709,9 +757,9 @@ function trackOrder(orderId) {
 
             ${timelineHtml}
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <div class="grid grid-cols-1 gap-6 mt-6">
                 
-                <div class="lg:col-span-2">
+                <div class="">
                     <h4 class="text-white font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
                         <i class="fas fa-list text-gray-500"></i> قائمة المنتجات
                     </h4>
@@ -720,7 +768,7 @@ function trackOrder(orderId) {
                     </div>
                 </div>
 
-                <div class="lg:col-span-1">
+                <div class="">
                     <div class="bg-white/5 rounded-2xl p-6 border border-white/10 sticky top-24 shadow-xl">
                         <h4 class="text-white font-bold mb-5 flex items-center gap-2 border-b border-white/10 pb-4">
                             <i class="fas fa-file-invoice-dollar text-gold"></i> ملخص الدفع
@@ -736,6 +784,8 @@ function trackOrder(orderId) {
                                 <span class="text-orange-400">مصاريف الشحن ${order.governorate ? `<span class="text-[10px] text-gray-500">(${order.governorate})</span>` : ''}</span>
                                 <span class="text-gold font-medium font-mono">${shipping > 0 ? shipping + ' ج.م' : 'مجاني'}</span>
                             </div>
+
+                            ${discountRowHtml}
                             
                             <div class="border-t-2 border-dashed border-white/10 my-2"></div>
                             
@@ -744,8 +794,11 @@ function trackOrder(orderId) {
                                 <span class="text-2xl text-green-400 font-bold font-mono">${total} <small class="text-xs text-gray-500 font-normal">ج.م</small></span>
                             </div>
                             
-                            <div class="bg-black/20 rounded-lg p-3 mt-4 text-center border border-white/5">
-                                <p class="text-xs text-gray-500"><i class="fas fa-money-bill-wave mb-1 block text-lg opacity-50"></i> الدفع عند الاستلام</p>
+                            <div class="bg-blue-900/20 rounded-lg p-3 mt-4 text-center border border-blue-500/20">
+                                <p class="text-xs text-blue-300">
+                                    <i class="fas fa-headset mb-1 block text-lg opacity-50"></i> 
+                                    سيتم التواصل معك لتحديد طريقة الدفع
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -864,16 +917,13 @@ return `
     }
 }
 
-
-// 2. استبدل دالة إرسال الطلب (Event Listener) بهذا الكود:
 document.getElementById('checkout-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if(!appState.cart.length) return showToast('السلة فارغة', 'error');
 
-    // استخدام دالة الحسابات المركزية للحصول على القيم الصحيحة
+    // ✅ جلب القيم المحدثة من دالة الحسابات
     const totals = updateCheckoutTotals(); 
     
-    // التحقق من اختيار المحافظة
     const govSelect = document.getElementById('governorate-select');
     if (!govSelect.value) {
         return showToast('يرجى اختيار المحافظة لحساب الشحن', 'error');
@@ -887,7 +937,6 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
     try {
         const fd = new FormData(e.target);
         
-        // تجهيز البيانات
         const orderData = {
             customer_name: fd.get('name'),
             phone: fd.get('phone'),
@@ -896,10 +945,12 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
             notes: fd.get('notes'),
             governorate: fd.get('governorate'),
             
-            // البيانات المالية من دالة الحسابات مباشرة
+            // ✅ إرسال البيانات المالية الجديدة
             books_price: totals.subtotal,
             shipping_cost: totals.shipping,
-            total_price: totals.total, 
+            discount_amount: totals.discount, // الخصم
+            coupon_code: totals.coupon,       // كود الكوبون
+            total_price: totals.total,        // الإجمالي النهائي
             
             items: appState.cart.map(i => `${i.title} (x${i.qty})`).join(' | '),
             cartData: JSON.stringify(appState.cart),
@@ -914,14 +965,14 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         const result = await res.json();
         
         if(result.success) {
-            // حفظ محلي
              const newLocalOrder = {
                 order_id: result.orderId,
                 status: 'جديد',
-                total_price: orderData.total_price + ' ج.م', // إضافة العملة للعرض
+                total_price: orderData.total_price + ' ج.م',
                 items: orderData.items,
                 date: new Date().toLocaleString('en-GB'),
-                date_preparing: '', date_shipped: '', date_delivered: '', date_cancelled: ''
+                // حفظنا الخصم محلياً للعرض السريع في التاريخ إذا أردت
+                discount_amount: orderData.discount_amount 
             };
             appState.orders.push(newLocalOrder);
             saveOrderLocal(result.orderId);
@@ -929,21 +980,23 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
             document.getElementById('success-order-id').textContent = result.orderId;
             document.getElementById('success-modal').classList.remove('hidden');
             appState.cart = [];
+            appState.activeCoupon = null; // ✅ تصفير الكوبون بعد النجاح
             saveCart(); renderCart();
             e.target.reset();
-            govSelect.value = ""; // إعادة تعيين المحافظة
+            govSelect.value = "";
             updateCheckoutTotals(); // تصفير الأرقام
         } else {
             throw new Error(result.error);
         }
     } catch(err) {
         console.error(err);
-        showToast('خطأ في الاتصال', 'error');
+        showToast('خطأ: ' + (err.message || 'حدث خطأ في الاتصال'), 'error');
     } finally {
         btn.innerHTML = oldText;
         btn.disabled = false;
     }
 });
+
 // === Utilities ===
 function calculatePrice(p, d) {
     const price = parseFloat(p) || 0;
@@ -1166,23 +1219,68 @@ function setupCheckoutLogic() {
     // الاستماع للتغيير
     govSelect.addEventListener('change', updateCheckoutTotals);
 }
-// [في ملف index.js]
+
+// [index.js] دالة الحسابات المركزية (المحدثة)
 function updateCheckoutTotals() {
-    // 1. حساب مجموع الكتب (Subtotal)
+    // 1. حساب مجموع الكتب
     const cartTotal = appState.cart.reduce((sum, item) => {
         const p = calculatePrice(item.price, item.discount);
         return sum + (p.final * item.qty);
     }, 0);
 
+    // 2. حساب الشحن
     const govSelect = document.getElementById('governorate-select');
     const selectedGov = govSelect ? govSelect.value : '';
-    const shippingCost = selectedGov ? (SHIPPING_RATES[selectedGov] || 0) : 0;
+    let shippingCost = selectedGov ? (SHIPPING_RATES[selectedGov] || 0) : 0;
+
+    // 3. حساب الخصم (الجديد)
+    let discountAmount = 0;
+    
+    if (appState.activeCoupon) {
+        const coupon = appState.activeCoupon;
+        
+        // التأكد من الحد الأدنى مجدداً (في حال حذف منتج من السلة)
+        if (cartTotal < (Number(coupon.min_order) || 0)) {
+             discountAmount = 0;
+             const msg = document.getElementById('coupon-msg');
+             if(msg) {
+                 msg.textContent = `عفواً، الطلب أقل من الحد الأدنى للكوبون (${coupon.min_order} ج.م)`;
+                 msg.className = 'text-[10px] mt-2 h-4 text-orange-400';
+             }
+        } else {
+            if (coupon.type === 'percent') {
+                discountAmount = cartTotal * (coupon.value / 100);
+                // تطبيق الحد الأقصى للخصم (Max Discount)
+                if (coupon.max_discount && discountAmount > coupon.max_discount) {
+                    discountAmount = coupon.max_discount;
+                }
+            } else if (coupon.type === 'fixed') {
+                discountAmount = coupon.value;
+            } else if (coupon.type === 'free_shipping') {
+                if (selectedGov) {
+                    discountAmount = shippingCost;
+                }
+            }
+        }
+    }
+    
+    // 4. الحساب النهائي
+    let finalTotal = (cartTotal + shippingCost) - discountAmount;
+    if (finalTotal < 0) finalTotal = 0;
+
+    // 5. تحديث الشاشة
     const subTotalEl = document.getElementById('summary-subtotal');
     if(subTotalEl) subTotalEl.textContent = cartTotal + ' ج.م';
+
     const shippingEl = document.getElementById('summary-shipping');
     if(shippingEl) {
         if (selectedGov) {
-            shippingEl.textContent = shippingCost + ' ج.م';
+            // عرض خاص للشحن المجاني
+            if (appState.activeCoupon && appState.activeCoupon.type === 'free_shipping' && discountAmount > 0) {
+                 shippingEl.innerHTML = `<span class="line-through text-gray-500 text-xs">${shippingCost}</span> <span class="text-green-400 font-bold">مجاني</span>`;
+            } else {
+                 shippingEl.textContent = shippingCost + ' ج.م';
+            }
             shippingEl.classList.remove('text-gray-500');
             shippingEl.classList.add('text-gold');
         } else {
@@ -1191,10 +1289,37 @@ function updateCheckoutTotals() {
             shippingEl.classList.add('text-gray-500');
         }
     }
-    const finalTotal = cartTotal + shippingCost;
+
+    // إظهار/إخفاء سطر الخصم
+    const discountRow = document.getElementById('summary-discount-row');
+    const discountVal = document.getElementById('summary-discount');
+    const discountCodeDisplay = document.getElementById('discount-code-display');
+    
+    if (discountAmount > 0) {
+        if(discountRow) {
+            discountRow.classList.remove('hidden');
+            discountRow.classList.add('flex');
+            discountVal.textContent = `-${discountAmount.toFixed(0)} ج.م`;
+            discountCodeDisplay.textContent = appState.activeCoupon.code;
+        }
+    } else {
+        if(discountRow) {
+            discountRow.classList.add('hidden');
+            discountRow.classList.remove('flex');
+        }
+    }
+
     const totalEl = document.getElementById('summary-total');
-    if(totalEl) totalEl.textContent = finalTotal + ' ج.م';
-    return { subtotal: cartTotal, shipping: shippingCost, total: finalTotal };
+    if(totalEl) totalEl.textContent = finalTotal.toFixed(0) + ' ج.م';
+
+    // إرجاع القيم لاستخدامها عند الإرسال
+    return { 
+        subtotal: cartTotal, 
+        shipping: shippingCost, 
+        discount: discountAmount,
+        coupon: appState.activeCoupon && discountAmount > 0 ? appState.activeCoupon.code : '',
+        total: finalTotal 
+    };
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1203,3 +1328,67 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// [index.js] دالة تطبيق الكوبون
+async function applyCoupon() {
+    const input = document.getElementById('coupon-input');
+    const btn = document.getElementById('btn-apply-coupon');
+    const msg = document.getElementById('coupon-msg');
+    const code = input.value.trim().toUpperCase();
+
+    if (!code) return;
+
+    // حساب قيمة الكتب الحالية لإرسالها للسيرفر (للتحقق من الحد الأدنى)
+    const currentBooksTotal = appState.cart.reduce((sum, item) => {
+         const p = calculatePrice(item.price, item.discount);
+         return sum + (p.final * item.qty);
+    }, 0);
+
+    // تغيير شكل الزر أثناء التحميل
+    const oldBtnContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    msg.textContent = '';
+    msg.className = 'text-[10px] mt-2 h-4 font-bold transition-all duration-300';
+
+    try {
+        const res = await fetch(`${API_URL}?action=validateCoupon`, {
+            method: 'POST',
+            body: JSON.stringify({ code: code, total: currentBooksTotal })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            appState.activeCoupon = result; // حفظ الكوبون في الذاكرة
+            msg.textContent = `تم تطبيق خصم ${result.type === 'percent' ? result.value + '%' : result.value + ' ج.م'} بنجاح! 🎉`;
+            msg.className = 'text-[10px] mt-2 h-4 text-green-400 font-bold';
+            
+            // قفل الحقل
+            input.disabled = true;
+            input.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            
+            updateCheckoutTotals(); // تحديث الحسابات فوراً
+        } else {
+            appState.activeCoupon = null;
+            msg.textContent = result.message || 'الكوبون غير صالح';
+            msg.className = 'text-[10px] mt-2 h-4 text-red-500 font-bold';
+            btn.innerHTML = oldBtnContent;
+            btn.disabled = false;
+            updateCheckoutTotals();
+        }
+    } catch (e) {
+        console.error(e);
+        msg.textContent = 'حدث خطأ في الاتصال';
+        msg.className = 'text-[10px] mt-2 h-4 text-red-500';
+        btn.innerHTML = oldBtnContent;
+        btn.disabled = false;
+    }
+}
+function copyCoupon(code) {
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+        showToast(`تم نسخ الكوبون: ${code}`, 'success');
+    }).catch(() => {
+        showToast('فشل النسخ', 'error');
+    });
+}

@@ -54,10 +54,12 @@
             <button onclick="switchTab('slider'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-images text-pink-400 w-6"></i> إدارة العروض
             </button>
+            <button onclick="switchTab('coupons'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
+                <i class="fas fa-ticket-alt text-yellow-400 w-6"></i> الكوبونات
+            </button>
             <button onclick="switchTab('settings'); toggleSidebar(false)" class="admin-tab-btn text-right p-3 rounded-lg hover:bg-white/5 transition flex items-center gap-3">
                 <i class="fas fa-sliders-h text-purple-400 w-6"></i> الإعدادات
             </button>
-            
             <div class="mt-auto">
                 <a href="index.html" class="block w-full text-center bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition mb-2">
                     <i class="fas fa-external-link-alt mr-2"></i> معاينة الموقع
@@ -202,24 +204,102 @@
             </section>
             
             <section id="tab-slider" class="admin-section hidden max-w-4xl mx-auto">
-                <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-                    <span class="text-pink-500">#</span> إدارة العروض (Slider)
-                </h2>
-                <div class="glass p-6 rounded-2xl mb-8 border border-pink-500/20">
-                    <h3 class="text-xl font-bold mb-4 text-pink-400">إضافة عرض جديد</h3>
-                    <form id="add-slider-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="title" placeholder="العنوان الرئيسي" required class="input-field">
-                        <input type="text" name="subtitle" placeholder="العنوان الفرعي" class="input-field">
-                        <input type="text" name="image_url" placeholder="رابط الصورة (URL)" required class="input-field col-span-2">
-                        <input type="text" name="link" placeholder="رابط عند الضغط (اختياري)" class="input-field">
-                        <button type="submit" class="bg-pink-600 hover:bg-pink-500 py-2 rounded-lg font-bold transition">إضافة العرض</button>
-                    </form>
-                </div>
-                <div class="space-y-4" id="slider-list-container">
-                    <div class="text-center text-gray-500">جاري التحميل...</div>
-                </div>
-            </section>
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+        <span class="text-pink-500">#</span> إدارة العروض (Slider)
+    </h2>
+    
+    <div class="glass p-6 rounded-2xl mb-8 border border-pink-500/20">
+        <h3 class="text-xl font-bold mb-4 text-pink-400">إضافة عرض جديد</h3>
+        <form id="add-slider-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">العنوان الرئيسي</label>
+                <input type="text" name="title" required class="input-field" placeholder="مثال: خصم خاص">
+            </div>
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">العنوان الفرعي</label>
+                <input type="text" name="subtitle" class="input-field" placeholder="مثال: لفترة محدودة">
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="text-xs text-gray-400 mb-1 block">رابط الصورة (URL)</label>
+                <input type="text" name="image_url" required class="input-field text-left" dir="ltr" placeholder="https://...">
+            </div>
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">رابط عند الضغط (اختياري)</label>
+                <input type="text" name="link" class="input-field text-left" dir="ltr" placeholder="https://...">
+            </div>
 
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">ربط بكوبون (اختياري)</label>
+                <div class="relative">
+                    <select name="coupon_code" class="slider-coupon-select input-field bg-[#222] appearance-none cursor-pointer">
+                        <option value="">-- بدون كوبون --</option>
+                        </select>
+                    <i class="fas fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                </div>
+            </div>
+            
+            <div class="md:col-span-2 mt-2">
+                <button type="submit" class="w-full bg-pink-600 hover:bg-pink-500 py-3 rounded-lg font-bold transition shadow-lg hover:shadow-pink-500/20">
+                    <i class="fas fa-plus-circle ml-2"></i> إضافة العرض
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="space-y-4" id="slider-list-container">
+        <div class="text-center text-gray-500">جاري التحميل...</div>
+    </div>
+</section>
+
+<section id="tab-coupons" class="admin-section hidden max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+        <span class="text-yellow-400">#</span> إدارة الكوبونات
+    </h2>
+
+    <div class="glass p-6 rounded-2xl mb-8 border border-yellow-500/20">
+        <h3 class="text-xl font-bold mb-4 text-yellow-400">إنشاء كوبون جديد</h3>
+        <form id="add-coupon-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="code" placeholder="كود الكوبون (مثال: SAVE20)" required class="input-field uppercase">
+            
+            <select name="type" class="input-field bg-[#222]" onchange="toggleCouponFields(this.value)">
+                <option value="percent">نسبة مئوية (%)</option>
+                <option value="fixed">مبلغ ثابت (ج.م)</option>
+                <option value="free_shipping">شحن مجاني</option>
+            </select>
+
+            <input type="number" name="value" placeholder="القيمة (مثال: 10)" class="input-field" id="coupon-value-field">
+            <input type="number" name="min_order" placeholder="الحد الأدنى للطلب" class="input-field">
+            
+            <input type="number" name="max_discount" placeholder="أقصى خصم (للنسبة)" class="input-field" id="coupon-max-field">
+            <input type="date" name="expiry_date" class="input-field" title="تاريخ الانتهاء">
+            <input type="number" name="usage_limit" placeholder="حد الاستخدام (عدد المرات)" class="input-field">
+            
+            <button type="submit" class="bg-yellow-600 hover:bg-yellow-500 py-2 rounded-lg font-bold transition md:col-span-4 text-black">إنشاء الكوبون</button>
+        </form>
+    </div>
+
+    <div class="glass rounded-2xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse min-w-[800px]">
+                <thead class="bg-white/5 text-gray-300">
+                    <tr>
+                        <th class="p-4 border-b border-white/10">الكود</th>
+                        <th class="p-4 border-b border-white/10">النوع</th>
+                        <th class="p-4 border-b border-white/10">القيمة</th>
+                        <th class="p-4 border-b border-white/10">الاستخدام</th>
+                        <th class="p-4 border-b border-white/10">الانتهاء</th>
+                        <th class="p-4 border-b border-white/10 text-center">حذف</th>
+                    </tr>
+                </thead>
+                <tbody id="coupons-table-body" class="divide-y divide-white/5 text-sm"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
              <section id="tab-settings" class="admin-section hidden max-w-2xl mx-auto">
                 <h2 class="text-3xl font-bold mb-8 text-center">إعدادات الموقع</h2>
                 <form id="settings-form" class="glass p-8 rounded-2xl space-y-6">
@@ -294,49 +374,55 @@
         </div>
     </div>
 
-    <div id="edit-slider-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass w-full max-w-lg p-6 rounded-2xl">
-            <h3 class="text-xl font-bold mb-4 text-pink-400">تعديل العرض</h3>
-            <form id="edit-slider-form" class="space-y-4">
-                <input type="hidden" name="id">
-                <input type="hidden" name="active">
-                <div>
-                    <label class="text-xs text-gray-400 mb-1">العنوان</label>
-                    <input type="text" name="title" class="input-field" required>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1">العنوان الفرعي</label>
-                    <input type="text" name="subtitle" class="input-field">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1">الصورة</label>
-                    <input type="text" name="image_url" class="input-field" required>
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1">الرابط</label>
-                    <input type="text" name="link" class="input-field">
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" class="flex-1 bg-pink-600 hover:bg-pink-500 py-2 rounded-lg font-bold">حفظ</button>
-                    <button type="button" onclick="document.getElementById('edit-slider-modal').classList.add('hidden')" class="flex-1 bg-gray-700 py-2 rounded-lg font-bold">إلغاء</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <div id="confirm-modal" class="fixed inset-0 bg-black/90 z-[150] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center border border-red-500/30 transform scale-95 opacity-0 transition-all duration-300" id="confirm-box">
-            <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-2">هل أنت متأكد؟</h3>
-            <p id="confirm-message" class="text-gray-400 mb-6 text-sm">لا يمكن التراجع عن هذا الإجراء.</p>
-            <div class="flex gap-3">
-                <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-xl font-bold transition">نعم، تابع</button>
-                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl font-bold transition">إلغاء</button>
-            </div>
+<div id="edit-slider-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="glass w-full max-w-lg p-6 rounded-2xl border border-pink-500/20 shadow-2xl">
+        <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+            <h3 class="text-xl font-bold text-pink-400">تعديل تفاصيل العرض</h3>
+            <button onclick="document.getElementById('edit-slider-modal').classList.add('hidden')" class="text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
         </div>
+        
+        <form id="edit-slider-form" class="space-y-4">
+            <input type="hidden" name="id">
+            <input type="hidden" name="active">
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">العنوان الرئيسي</label>
+                <input type="text" name="title" class="input-field" required>
+            </div>
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">العنوان الفرعي</label>
+                <input type="text" name="subtitle" class="input-field">
+            </div>
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">رابط الصورة</label>
+                <input type="text" name="image_url" class="input-field text-left" dir="ltr" required>
+            </div>
+            
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">الرابط عند الضغط</label>
+                <input type="text" name="link" class="input-field text-left" dir="ltr">
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">الكوبون المرتبط</label>
+                <div class="relative">
+                    <select name="coupon_code" class="slider-coupon-select input-field bg-[#222] appearance-none cursor-pointer">
+                        <option value="">-- بدون كوبون --</option>
+                        </select>
+                    <i class="fas fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-4 border-t border-white/10">
+                <button type="submit" class="flex-1 bg-pink-600 hover:bg-pink-500 py-3 rounded-lg font-bold transition shadow-lg">حفظ التغييرات</button>
+                <button type="button" onclick="document.getElementById('edit-slider-modal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-bold transition">إلغاء</button>
+            </div>
+        </form>
     </div>
+</div>
 
 <div id="order-details-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="glass w-full max-w-3xl p-0 rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
@@ -353,30 +439,42 @@
         
         <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                <div>
-                    <span class="text-gray-400 text-xs block mb-1">الحالة الحالية</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <label class="text-gray-500 text-xs block mb-1">الحالة الحالية</label>
                     <div id="modal-order-status" class="text-xl font-bold text-gold">جديد</div>
                 </div>
-                <div>
-                    <span class="text-gray-400 text-xs block mb-1">تاريخ الإنشاء</span>
-                    <div id="modal-order-date" class="text-white">...</div>
+                <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                    <label class="text-gray-500 text-xs block mb-1">تاريخ الإنشاء</label>
+                    <div id="modal-order-date" class="text-white font-mono">...</div>
                 </div>
             </div>
 
             <div class="space-y-3">
                 <h4 class="text-gold font-bold border-b border-white/10 pb-2 text-sm">بيانات العميل</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div><span class="text-gray-500 w-20 inline-block">الاسم:</span> <span id="modal-customer-name" class="text-white font-bold">...</span></div>
-                    <div><span class="text-gray-500 w-20 inline-block">الهاتف:</span> <span id="modal-customer-phone" class="text-white">...</span></div>
-                    <div><span class="text-gray-500 w-20 inline-block">الإيميل:</span> <span id="modal-customer-email" class="text-white">...</span></div>
-                    <div class="col-span-1 md:col-span-2"><span class="text-gray-500 w-20 inline-block">العنوان:</span> <span id="modal-customer-address" class="text-white bg-white/5 px-2 py-1 rounded">...</span></div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">الاسم بالكامل</label>
+                        <div id="modal-customer-name" class="text-white font-bold bg-black/20 p-2.5 rounded-lg border border-white/5">...</div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">رقم الهاتف</label>
+                        <div id="modal-customer-phone" class="text-white bg-black/20 p-2.5 rounded-lg border border-white/5 font-mono">...</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-xs text-gray-400 block mb-1">البريد الإلكتروني</label>
+                        <div id="modal-customer-email" class="text-white bg-black/20 p-2.5 rounded-lg border border-white/5">...</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-xs text-gray-400 block mb-1">عنوان الشحن</label>
+                        <div id="modal-customer-address" class="text-white bg-black/20 p-2.5 rounded-lg border border-white/5 leading-relaxed">...</div>
+                    </div>
                 </div>
             </div>
 
             <div class="space-y-3">
                 <h4 class="text-gold font-bold border-b border-white/10 pb-2 text-sm">المنتجات المطلوبة</h4>
-                <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5 flex flex-col">
+                <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5 flex flex-col min-h-[50px]">
                     </div>
             </div>
 
@@ -393,6 +491,12 @@
                     <span>مصاريف الشحن:</span>
                     <span id="modal-shipping-cost" class="text-gold">...</span>
                 </div>
+
+                <div id="modal-discount-row" class="flex justify-between text-sm text-green-400 border-b border-white/10 pb-2 mb-2 hidden">
+                    <span>خصم الكوبون (<span id="modal-coupon-code"></span>):</span>
+                    <span id="modal-discount-amount" class="font-bold">...</span>
+                </div>
+
                 <div class="flex justify-between font-bold text-lg">
                     <span class="text-white">الإجمالي النهائي:</span>
                     <span id="modal-order-total-final" class="text-green-400">...</span>
@@ -415,7 +519,19 @@
 </div>
 
     <div id="toast-container" class="fixed bottom-6 left-6 z-[100] flex flex-col gap-2"></div>
-
+<div id="confirm-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="confirm-box" class="glass max-w-sm w-full p-6 rounded-2xl border border-white/10 shadow-2xl text-center transform scale-95 opacity-0 transition-all duration-300">
+            <div class="w-16 h-16 bg-yellow-500/20 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fas fa-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">هل أنت متأكد؟</h3>
+            <p id="confirm-message" class="text-gray-400 mb-6 text-sm">هل تريد حقاً تنفيذ هذا الإجراء؟</p>
+            <div class="flex gap-3">
+                <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl font-bold transition">نعم، نفذ</button>
+                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2.5 rounded-xl font-bold transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
     <script src="admin.js"></script>
 </body>
 </html>

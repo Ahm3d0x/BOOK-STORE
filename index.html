@@ -235,7 +235,6 @@
         </div>
     </div>
 </section>
-
 <section id="checkout-view" class="view-section hidden slide-in">
     <div class="container mx-auto px-4 max-w-6xl">
         <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
@@ -267,7 +266,7 @@
                         <div class="relative">
                             <select id="governorate-select" name="governorate" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition appearance-none cursor-pointer text-white">
                                 <option value="" disabled selected>اختر المحافظة لتحديد سعر الشحن...</option>
-                                </select>
+                            </select>
                             <i class="fas fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
                         </div>
                     </div>
@@ -297,17 +296,38 @@
                         <i class="fas fa-receipt text-gold"></i> ملخص الطلب
                     </h3>
 
-                    <div id="checkout-summary" class="space-y-3 mb-6 max-h-48 overflow-y-auto custom-scrollbar pr-2 border-b border-white/10 pb-4">
-                        </div>
+                    <div id="checkout-summary" class="space-y-3 mb-4 max-h-48 overflow-y-auto custom-scrollbar pr-2 border-b border-white/10 pb-4"></div>
 
-                    <div class="space-y-3 text-sm">
+                    <div class="mt-4 mb-4 pt-2">
+                        <label class="text-xs text-gray-400 mb-2 block">هل لديك كوبون خصم؟</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="coupon-input" placeholder="أدخل الكود (مثال: SAVE10)" 
+                                   class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm w-full focus:border-gold outline-none uppercase text-white tracking-widest transition focus:bg-black/60">
+                            
+                            <button type="button" onclick="applyCoupon()" id="btn-apply-coupon" 
+                                    class="bg-white/10 hover:bg-gold hover:text-black text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
+                                <span>تطبيق</span> <i class="fas fa-tag"></i>
+                            </button>
+                        </div>
+                        <p id="coupon-msg" class="text-[10px] mt-2 h-4 font-bold transition-all duration-300"></p>
+                    </div>
+
+                    <div class="space-y-3 text-sm border-t border-white/10 pt-4">
                         <div class="flex justify-between text-gray-400">
                             <span>مجموع الكتب:</span>
                             <span id="summary-subtotal" class="text-white font-bold">0 ج.م</span>
                         </div>
+                        
                         <div class="flex justify-between text-gray-400 items-center">
                             <span class="flex items-center gap-2"><i class="fas fa-truck text-gold"></i> مصاريف الشحن:</span>
                             <span id="summary-shipping" class="text-gold font-bold">--</span>
+                        </div>
+
+                        <div id="summary-discount-row" class="flex justify-between text-green-400 items-center hidden bg-green-900/10 p-2 rounded-lg border border-green-500/20 mt-2">
+                            <span class="flex items-center gap-2">
+                                <i class="fas fa-receipt"></i> خصم (<span id="discount-code-display" class="font-mono text-xs uppercase"></span>):
+                            </span>
+                            <span id="summary-discount" class="font-bold">-0 ج.م</span>
                         </div>
                     </div>
 
@@ -327,6 +347,7 @@
         </form>
     </div>
 </section>
+
         <section id="about-view" class="view-section hidden slide-in">
             <div class="container mx-auto px-4 max-w-7xl text-center py-10">
                 <div class="glass rounded-3xl p-10 md:p-16 border border-white/5 shadow-2xl relative overflow-hidden">
@@ -470,7 +491,19 @@
             </div>
         </div>
     </div>
-
+<div id="confirm-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="confirm-box" class="glass max-w-sm w-full p-6 rounded-2xl border border-white/10 shadow-2xl text-center transform scale-95 opacity-0 transition-all duration-300">
+            <div class="w-16 h-16 bg-yellow-500/20 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fas fa-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">هل أنت متأكد؟</h3>
+            <p id="confirm-message" class="text-gray-400 mb-6 text-sm">هل تريد حقاً تنفيذ هذا الإجراء؟</p>
+            <div class="flex gap-3">
+                <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl font-bold transition">نعم، نفذ</button>
+                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2.5 rounded-xl font-bold transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
     <script src="index.js"></script>
 </body>
 </html>
