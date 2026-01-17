@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbydscDFuy-IKcjWbHkAJ0w05vF91QWxDuvyM9TqFW_AbGSwW88EwL7h7Qg3JjmMbUN0/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzsD6YKBKnbQ7wXgnOmv8WG3LcQa9sPC_tbHOyGcJWZbQ3zyWTBfu_2dtlRh5CLLBAg/exec';
 
 
 // === Global Variables ===
@@ -599,35 +599,82 @@ function filterOrders(term) {
     renderOrders(filtered);
 }
 
+// [admin.js] دالة عرض التفاصيل المحدثة
 function viewOrderDetails(orderId) {
     const order = allOrdersData.find(o => String(o.order_id) === String(orderId));
     if (!order) return;
 
-    // Fill Modal Data
+    // 1. البيانات الأساسية
     document.getElementById('modal-order-id').innerText = `#${order.order_id}`;
     document.getElementById('modal-order-status').innerText = order.status;
     document.getElementById('modal-order-date').innerText = order.date;
     
+    // 2. بيانات العميل
     document.getElementById('modal-customer-name').innerText = order.customer_name;
     document.getElementById('modal-customer-phone').innerText = order.phone;
     document.getElementById('modal-customer-email').innerText = order.email || '-';
     document.getElementById('modal-customer-address').innerText = order.address;
-    
-    document.getElementById('modal-order-items').innerText = order.items; 
-    document.getElementById('modal-order-total').innerText = order.total_price;
 
-    // Build History/Timeline
+    // 3. المنتجات (التحديث الجديد: تقسيم النص وعرضه كقائمة)
+    const itemsContainer = document.getElementById('modal-order-items');
+    if (order.items) {
+        // تحويل النص "Book A (x1) | Book B (x2)" إلى HTML
+        const itemsList = order.items.split(' | ');
+        itemsContainer.innerHTML = itemsList.map(item => `
+            <div class="flex items-center gap-2 p-2 bg-white/5 rounded border border-white/5">
+                <i class="fas fa-book text-gold text-xs"></i>
+                <span class="text-gray-200">${item}</span>
+            </div>
+        `).join('');
+    } else {
+        itemsContainer.innerHTML = '<span class="text-gray-500 italic">لا توجد منتجات</span>';
+    }
+
+    // 4. الحسابات المالية
+    const total = parseFloat(order.total_price) || 0;
+    const shipping = parseFloat(order.shipping_cost) || 0;
+    // إذا لم يكن سعر الكتب محفوظاً، نستنتجه
+    const booksPrice = parseFloat(order.books_price) || (total - shipping);
+
+    document.getElementById('modal-books-price').innerText = booksPrice + ' ج.م';
+    document.getElementById('modal-order-gov').innerText = order.governorate || 'غير محدد';
+    document.getElementById('modal-shipping-cost').innerText = shipping + ' ج.م';
+    document.getElementById('modal-order-total-final').innerText = total + ' ج.م';
+
+    // 5. سجل الحالات (Timeline)
     let historyHtml = '';
-    if (order.date) historyHtml += `<div class="flex justify-between text-gray-400 border-l-2 border-gray-600 pl-3 pb-3 relative"><div class="absolute -left-[5px] top-0 w-2 h-2 bg-gray-500 rounded-full"></div><span>تم الإنشاء</span><span>${order.date}</span></div>`;
+    if (order.date) historyHtml += historyItem('تم الإنشاء', order.date, 'gray');
+    if (order.date_preparing) historyHtml += historyItem('جاري التحضير', order.date_preparing, 'blue');
+    if (order.date_shipped) historyHtml += historyItem('تم الشحن', order.date_shipped, 'yellow');
+    if (order.date_delivered) historyHtml += historyItem('تم التسليم', order.date_delivered, 'green');
+    if (order.date_cancelled) historyHtml += historyItem('تم الإلغاء', order.date_cancelled, 'red');
     
-    if (order.date_preparing) historyHtml += `<div class="flex justify-between text-blue-400 border-l-2 border-blue-500 pl-3 pb-3 relative"><div class="absolute -left-[5px] top-0 w-2 h-2 bg-blue-500 rounded-full"></div><span>جاري التحضير</span><span>${order.date_preparing}</span></div>`;
-    if (order.date_shipped) historyHtml += `<div class="flex justify-between text-yellow-400 border-l-2 border-yellow-500 pl-3 pb-3 relative"><div class="absolute -left-[5px] top-0 w-2 h-2 bg-yellow-500 rounded-full"></div><span>تم الشحن</span><span>${order.date_shipped}</span></div>`;
-    if (order.date_delivered) historyHtml += `<div class="flex justify-between text-green-400 border-l-2 border-green-500 pl-3 relative"><div class="absolute -left-[5px] top-0 w-2 h-2 bg-green-500 rounded-full"></div><span>تم التسليم</span><span>${order.date_delivered}</span></div>`;
-    if (order.date_cancelled) historyHtml += `<div class="flex justify-between text-red-400 border-l-2 border-red-500 pl-3 relative"><div class="absolute -left-[5px] top-0 w-2 h-2 bg-red-500 rounded-full"></div><span>تم الإلغاء</span><span>${order.date_cancelled}</span></div>`;
+    document.getElementById('modal-order-history').innerHTML = historyHtml || '<div class="text-gray-500 italic">لا توجد تحديثات</div>';
 
-    document.getElementById('modal-order-history').innerHTML = historyHtml || '<div class="text-gray-500 italic">لا توجد تحديثات إضافية</div>';
+    // 6. تفعيل زر الحذف
+    const delBtn = document.getElementById('btn-delete-order');
+    if(delBtn) delBtn.onclick = () => deleteOrderFinal(order.order_id);
 
+    // إظهار المودال
     document.getElementById('order-details-modal').classList.remove('hidden');
+}
+
+// دالة مساعدة صغيرة لرسم عناصر التايم لاين
+function historyItem(label, date, color) {
+    const colors = {
+        gray: 'text-gray-400 border-gray-600 bg-gray-500',
+        blue: 'text-blue-400 border-blue-500 bg-blue-500',
+        yellow: 'text-yellow-400 border-yellow-500 bg-yellow-500',
+        green: 'text-green-400 border-green-500 bg-green-500',
+        red: 'text-red-400 border-red-500 bg-red-500'
+    };
+    const c = colors[color];
+    return `
+    <div class="flex justify-between ${c.split(' ')[0]} border-l-2 ${c.split(' ')[1]} pl-3 pb-3 relative">
+        <div class="absolute -left-[5px] top-0 w-2 h-2 ${c.split(' ')[2]} rounded-full"></div>
+        <span>${label}</span>
+        <span class="text-xs font-mono opacity-75">${date}</span>
+    </div>`;
 }
 
 function updateStatus(id, newStatus) {
@@ -671,4 +718,33 @@ function getImageUrl(url) {
     }
     
     return url;
+}
+
+function deleteOrderFinal(orderId) {
+    showConfirm(`هل أنت متأكد من حذف الطلب #${orderId} نهائياً من قاعدة البيانات؟`, async () => {
+        const btn = document.getElementById('btn-delete-order');
+        const oldText = btn ? btn.innerHTML : '';
+        if(btn) btn.innerHTML = 'جاري الحذف...';
+        
+        try {
+            const res = await fetch(`${API_URL}?action=deleteOrder`, {
+                method: 'POST',
+                body: JSON.stringify({ order_id: orderId })
+            });
+            const result = await res.json();
+            
+            if(result.success) {
+                showToast('تم حذف الطلب بنجاح', 'success');
+                document.getElementById('order-details-modal').classList.add('hidden');
+                // حذف الطلب من المصفوفة المحلية وتحديث الجدول دون إعادة التحميل
+                allOrdersData = allOrdersData.filter(o => o.order_id !== orderId);
+                renderOrders(allOrdersData);
+            } else {
+                throw new Error(result.error);
+            }
+        } catch(e) {
+            showToast('فشل الحذف: ' + e.message, 'error');
+            if(btn) btn.innerHTML = oldText;
+        }
+    });
 }

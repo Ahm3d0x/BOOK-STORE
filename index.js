@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbydscDFuy-IKcjWbHkAJ0w05vF91QWxDuvyM9TqFW_AbGSwW88EwL7h7Qg3JjmMbUN0/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzsD6YKBKnbQ7wXgnOmv8WG3LcQa9sPC_tbHOyGcJWZbQ3zyWTBfu_2dtlRh5CLLBAg/exec';
 
 // === State ===
 let appState = {
@@ -13,6 +13,36 @@ let appState = {
     sliderTimer: null // Variable to hold the timer
 };
 
+const SHIPPING_RATES = {
+    "كفر صقر":20,
+    "الشرقية": 35,
+    "القاهرة": 50,
+    "الجيزة": 50,
+    "الإسكندرية": 55,
+    "الدقهلية": 45,
+    "القليوبية": 45,
+    "المنوفية": 45,
+    "الغربية": 45,
+    "بورسعيد": 55,
+    "الإسماعيلية": 50,
+    "السويس": 50,
+    "كفر الشيخ": 55,
+    "البحيرة": 55,
+    "دمياط": 55,
+    "الفيوم": 60,
+    "بني سويف": 60,
+    "المنيا": 70,
+    "أسيوط": 70,
+    "سوهاج": 75,
+    "قنا": 80,
+    "الأقصر": 85,
+    "أسوان": 90,
+    "مطروح": 95,
+    "الوادي الجديد": 100,
+    "البحر الأحمر": 100,
+    "شمال سيناء": 100,
+    "جنوب سيناء": 100
+};
 // === Init ===
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -342,34 +372,36 @@ function renderFeatured() {
         return;
     }
 
-    container.innerHTML = featured.map(book => {
-        const p = calculatePrice(book.price, book.discount);
-        const isOutOfStock = parseInt(book.stock) <= 0;
 
-        return `
-            <div class="min-w-[180px] w-full glass rounded-2xl overflow-hidden cursor-pointer group relative snap-center transition duration-300 border border-white/5 hover:border-gold/30" onclick="openBookModal('${book.id}')">
-                <div class="h-64 overflow-hidden relative bg-black/50">
-                    <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
-                    
-                    ${isOutOfStock 
-                        ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20">نفذت الكمية</span>`
-                        : (p.hasDiscount ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md">-${p.percent}%</span>` : '')
-                    }
+container.innerHTML = featured.map(book => {
+    const p = calculatePrice(book.price, book.discount);
+    const isOutOfStock = parseInt(book.stock) <= 0;
 
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                         <i class="fas ${isOutOfStock ? 'fa-ban text-gray-400' : 'fa-eye text-white'} text-3xl drop-shadow-lg"></i>
-                    </div>
-                </div>
-                <div class="p-3">
-                    <h4 class="font-bold text-white truncate text-sm mb-1 group-hover:text-gold transition">${book.title}</h4>
-                    <div class="flex items-center gap-2">
-                        <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-sm">${p.final} ج.م</span>
-                        ${p.hasDiscount && !isOutOfStock ? `<span class="text-gray-500 text-xs line-through">${p.original}</span>` : ''}
-                    </div>
+    // التعديل هنا: استخدام aspect-[2/3] و object-contain
+    return `
+        <div class="min-w-[160px] md:min-w-[200px] w-full glass rounded-2xl overflow-hidden cursor-pointer group relative snap-center transition duration-300 border border-white/5 hover:border-gold/30" onclick="openBookModal('${book.id}')">
+            <div class="w-full aspect-[2/3] overflow-hidden relative bg-[#151515] flex items-center justify-center">
+                <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-contain p-1 group-hover:scale-105 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                
+                ${isOutOfStock 
+                    ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20 z-10">نفذت الكمية</span>`
+                    : (p.hasDiscount ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10">-${p.percent}%</span>` : '')
+                }
+
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-20">
+                     <i class="fas ${isOutOfStock ? 'fa-ban text-gray-400' : 'fa-eye text-white'} text-3xl drop-shadow-lg"></i>
                 </div>
             </div>
-        `;
-    }).join('');
+            <div class="p-3">
+                <h4 class="font-bold text-white truncate text-sm mb-1 group-hover:text-gold transition text-right">${book.title}</h4>
+                <div class="flex items-center gap-2 flex-row-reverse justify-end">
+                    <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-sm">${p.final} ج.م</span>
+                    ${p.hasDiscount && !isOutOfStock ? `<span class="text-gray-500 text-xs line-through">${p.original}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}).join('');
 }
 
 
@@ -412,41 +444,41 @@ function createBookCard(book) {
     // التحقق من المخزون
     const isOutOfStock = parseInt(book.stock) <= 0;
 
-    return `
-        <div class="book-card group relative h-full flex flex-col cursor-pointer" onclick="openBookModal('${book.id}')">
-<div class="book-cover-wrapper w-full aspect-square rounded-xl overflow-hidden relative mb-4 shadow-lg border border-white/5">
-             <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-cover transition duration-500 ${isOutOfStock ? 'grayscale opacity-70' : ''}" onerror="this.src='https://placehold.co/300x450?text=No+Image'">
-                
-                ${isOutOfStock 
-                    ? `<span class="absolute top-3 right-3 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded shadow-lg z-20 border border-white/20">نفذت الكمية</span>` 
-                    : (p.hasDiscount ? `<span class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-10">خصم ${p.percent}%</span>` : '')
-                }
+return `
+    <div class="book-card group relative h-full flex flex-col cursor-pointer" onclick="openBookModal('${book.id}')">
+        <div class="book-cover-wrapper w-full aspect-[2/3] rounded-xl overflow-hidden relative mb-4 shadow-lg border border-white/5 bg-[#151515] flex items-center justify-center">
+             <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-contain p-1 transition duration-500 ${isOutOfStock ? 'grayscale opacity-70' : ''}" onerror="this.src='https://placehold.co/300x450?text=No+Image'">
+            
+            ${isOutOfStock 
+                ? `<span class="absolute top-3 right-3 bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded shadow-lg z-20 border border-white/20">نفذت الكمية</span>` 
+                : (p.hasDiscount ? `<span class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-10">خصم ${p.percent}%</span>` : '')
+            }
 
-                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
-                    ${isOutOfStock 
-                        ? `<button disabled class="bg-gray-600 text-white w-12 h-12 rounded-full flex items-center justify-center cursor-not-allowed opacity-80">
-                             <i class="fas fa-ban text-lg"></i>
-                           </button>`
-                        : `<button onclick="event.stopPropagation(); addToCart('${book.id}')" class="bg-gold text-black w-12 h-12 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition delay-75 hover:scale-110 shadow-glow">
-                             <i class="fas fa-cart-plus text-lg"></i>
-                           </button>`
-                    }
-                    <span class="text-white font-bold text-sm tracking-widest border border-white/30 px-3 py-1 rounded-full">تفاصيل</span>
-                </div>
-            </div>
-            <div class="flex-1 flex flex-col px-1">
-                <h3 class="font-bold text-base text-white leading-snug mb-1 group-hover:text-gold transition line-clamp-1">${book.title}</h3>
-                <p class="text-xs text-gray-400 mb-2">${book.author}</p>
-                <div class="mt-auto flex items-center justify-between border-t border-white/5 pt-2">
-                    <div class="flex flex-col">
-                         ${p.hasDiscount && !isOutOfStock ? `<span class="text-[10px] text-gray-500 line-through">${p.original}</span>` : ''}
-                         <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-lg leading-none">${p.final} <small class="text-[10px] text-gray-400">ج.م</small></span>
-                    </div>
-                    <div class="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-400">${book.category || 'عام'}</div>
-                </div>
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-[2px] z-30">
+                ${isOutOfStock 
+                    ? `<button disabled class="bg-gray-600 text-white w-12 h-12 rounded-full flex items-center justify-center cursor-not-allowed opacity-80">
+                         <i class="fas fa-ban text-lg"></i>
+                       </button>`
+                    : `<button onclick="event.stopPropagation(); addToCart('${book.id}')" class="bg-gold text-black w-12 h-12 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition delay-75 hover:scale-110 shadow-glow">
+                         <i class="fas fa-cart-plus text-lg"></i>
+                       </button>`
+                }
+                <span class="text-white font-bold text-sm tracking-widest border border-white/30 px-3 py-1 rounded-full">تفاصيل</span>
             </div>
         </div>
-    `;
+        <div class="flex-1 flex flex-col px-1">
+            <h3 class="font-bold text-base text-white leading-snug mb-1 group-hover:text-gold transition line-clamp-1">${book.title}</h3>
+            <p class="text-xs text-gray-400 mb-2">${book.author}</p>
+            <div class="mt-auto flex items-center justify-between border-t border-white/5 pt-2">
+                <div class="flex flex-col">
+                     ${p.hasDiscount && !isOutOfStock ? `<span class="text-[10px] text-gray-500 line-through">${p.original}</span>` : ''}
+                     <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-lg leading-none">${p.final} <small class="text-[10px] text-gray-400">ج.م</small></span>
+                </div>
+                <div class="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-400">${book.category || 'عام'}</div>
+            </div>
+        </div>
+    </div>
+`;
 }
 
 
@@ -547,17 +579,23 @@ document.getElementById('tracking-form').addEventListener('submit', (e) => {
     const orderId = e.target.orderId.value.trim().toUpperCase();
     trackOrder(orderId);
 });
-
+// [في ملف index.js] استبدل دالة trackOrder بهذا الكود المحدث
 function trackOrder(orderId) {
     const resultDiv = document.getElementById('tracking-result');
     const order = appState.orders.find(o => String(o.order_id).toUpperCase() === orderId);
 
     if(!order) {
-        resultDiv.innerHTML = `<div class="text-center text-red-400 py-6"><i class="fas fa-exclamation-circle text-4xl mb-3 opacity-50"></i><p>عذراً، لم يتم العثور على طلب بهذا الرقم.</p></div>`;
+        resultDiv.innerHTML = `<div class="text-center text-red-400 py-10 glass rounded-2xl border border-red-500/20"><i class="fas fa-search text-5xl mb-4 opacity-50"></i><p class="text-lg">عذراً، لم يتم العثور على طلب بهذا الرقم.</p></div>`;
         resultDiv.classList.remove('hidden');
         return;
     }
 
+    // --- 1. الحسابات المالية ---
+    const total = parseFloat(order.total_price) || 0;
+    const shipping = parseFloat(order.shipping_cost) || 0;
+    const booksPrice = parseFloat(order.books_price) || (total - shipping);
+
+    // --- 2. التايم لاين (Timeline) ---
     const steps = [
         { status: 'جديد', label: 'تم الاستلام', icon: 'fa-clipboard-check', date: order.date },
         { status: 'جاري التحضير', label: 'جاري التجهيز', icon: 'fa-box-open', date: order.date_preparing },
@@ -570,25 +608,24 @@ function trackOrder(orderId) {
 
     if(isCancelled) {
         timelineHtml = `
-            <div class="bg-red-500/10 text-red-400 p-6 rounded-2xl text-center mb-4 border border-red-500/20">
+            <div class="bg-red-500/10 text-red-400 p-6 rounded-2xl text-center mb-8 border border-red-500/20">
                 <i class="fas fa-ban text-4xl mb-3"></i>
                 <h3 class="font-bold text-xl mb-1">تم إلغاء هذا الطلب</h3>
                 <p class="text-sm opacity-70">تاريخ الإلغاء: ${order.date_cancelled || '-'}</p>
             </div>
         `;
     } else {
-        timelineHtml = `<div class="relative flex flex-col md:flex-row justify-between items-start w-full my-10 px-4">
+        timelineHtml = `<div class="relative flex flex-col md:flex-row justify-between items-start w-full my-8 px-2 md:px-4">
             <div class="absolute left-8 md:left-0 top-0 md:top-5 w-1 md:w-full h-full md:h-1 bg-gray-800 -z-10 md:mx-4"></div>
         `;
-        
         steps.forEach((step) => {
             const isDone = !!step.date;
             const colorClass = isDone ? 'bg-green-500 text-black shadow-[0_0_15px_rgba(34,197,94,0.5)]' : 'bg-[#1a1a1a] text-gray-600 border border-gray-700';
-            
             timelineHtml += `
                 <div class="flex md:flex-col items-center gap-6 md:gap-3 w-full md:w-auto mb-8 md:mb-0">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass} z-10 transition-all duration-500">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClass} z-10 transition-all duration-500 relative">
                         <i class="fas ${step.icon}"></i>
+                        ${isDone ? '<i class="fas fa-check-circle absolute -top-1 -right-1 text-white bg-green-600 rounded-full text-[10px] border border-black"></i>' : ''}
                     </div>
                     <div class="text-left md:text-center flex-1">
                         <p class="font-bold text-sm ${isDone ? 'text-white' : 'text-gray-500'}">${step.label}</p>
@@ -600,20 +637,124 @@ function trackOrder(orderId) {
         timelineHtml += `</div>`;
     }
 
+    // --- 3. المنتجات والأسعار ---
+    let itemsHtml = '';
+    if (order.items) {
+        const itemsList = order.items.split(' | ');
+        itemsHtml = itemsList.map(itemStr => {
+            // محاولة استخراج الاسم والكمية والسعر
+            // الصيغة المتوقعة: "اسم الكتاب (x1)"
+            let title = itemStr;
+            let qty = 1;
+            let priceDisplay = '';
+
+            const qtyMatch = itemStr.match(/(.*)\s\(x(\d+)\)$/);
+            if(qtyMatch) {
+                title = qtyMatch[1].trim();
+                qty = parseInt(qtyMatch[2]);
+            }
+
+            // البحث عن الكتاب في البيانات الحالية لجلب سعره (محاولة ذكية)
+            const book = appState.books.find(b => b.title.trim() === title.trim());
+            if(book) {
+                // حساب السعر بناءً على الخصم الحالي
+                const price = parseFloat(book.price);
+                const discount = parseFloat(book.discount) || 0;
+                const finalPrice = price - discount;
+                const totalItemPrice = finalPrice * qty;
+                priceDisplay = `<span class="text-gold font-mono font-bold">${totalItemPrice} ج.م</span>`;
+            } else {
+                priceDisplay = `<span class="text-gray-600 text-xs">--</span>`;
+            }
+
+            return `
+                <div class="flex justify-between items-center p-4 bg-black/40 rounded-xl border border-white/5 hover:border-gold/20 transition group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-gold group-hover:bg-gold/10 transition">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div>
+                            <div class="text-gray-200 font-bold text-sm mb-1">${title}</div>
+                            <div class="text-xs text-gray-500 flex items-center gap-2">
+                                <span>الكمية: <span class="text-white">${qty}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>${priceDisplay}</div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        itemsHtml = '<div class="text-gray-500 text-sm py-4 text-center">لا توجد تفاصيل للمنتجات</div>';
+    }
+
+    // --- 4. الهيكل النهائي (Grid Layout) ---
     resultDiv.innerHTML = `
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
-            <div>
-                <h3 class="text-2xl font-bold text-white mb-1">تفاصيل الطلب <span class="text-gold font-mono">#${order.order_id}</span></h3>
-                <p class="text-sm text-gray-400">الإجمالي: <span class="text-white font-bold">${order.total_price}</span></p>
+        <div class="animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-white/10 pb-6 gap-4">
+                <div>
+                    <h3 class="text-2xl font-bold text-white mb-1 flex items-center gap-3">
+                        <span class="text-gold text-3xl"><i class="fas fa-box"></i></span>
+                        <div>
+                            <span class="block text-xs text-gray-500 font-normal mb-1">رقم الطلب</span>
+                            <span class="font-mono text-white tracking-wider">#${order.order_id}</span>
+                        </div>
+                    </h3>
+                </div>
+                <div class="bg-gold/10 text-gold border border-gold/20 px-5 py-2 rounded-full text-sm font-bold shadow-glow flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gold animate-pulse"></div>
+                    ${order.status}
+                </div>
             </div>
-            <div class="bg-gold/10 text-gold border border-gold/20 px-4 py-2 rounded-full text-sm font-bold shadow-glow">${order.status}</div>
-        </div>
-        ${timelineHtml}
-        <div class="bg-white/5 p-5 rounded-xl text-sm border border-white/5">
-            <h4 class="text-gray-400 mb-3 uppercase tracking-wider text-xs">المنتجات المطلوبة:</h4>
-            <p class="text-gray-200 leading-relaxed font-semibold">${order.items}</p>
+
+            ${timelineHtml}
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                
+                <div class="lg:col-span-2">
+                    <h4 class="text-white font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <i class="fas fa-list text-gray-500"></i> قائمة المنتجات
+                    </h4>
+                    <div class="space-y-3">
+                        ${itemsHtml}
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <div class="bg-white/5 rounded-2xl p-6 border border-white/10 sticky top-24 shadow-xl">
+                        <h4 class="text-white font-bold mb-5 flex items-center gap-2 border-b border-white/10 pb-4">
+                            <i class="fas fa-file-invoice-dollar text-gold"></i> ملخص الدفع
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-400">مجموع الكتب</span>
+                                <span class="text-white font-medium font-mono">${booksPrice} ج.م</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-orange-400">مصاريف الشحن ${order.governorate ? `<span class="text-[10px] text-gray-500">(${order.governorate})</span>` : ''}</span>
+                                <span class="text-gold font-medium font-mono">${shipping > 0 ? shipping + ' ج.م' : 'مجاني'}</span>
+                            </div>
+                            
+                            <div class="border-t-2 border-dashed border-white/10 my-2"></div>
+                            
+                            <div class="flex justify-between items-end">
+                                <span class="text-gray-200 font-bold text-lg">الإجمالي الكلي</span>
+                                <span class="text-2xl text-green-400 font-bold font-mono">${total} <small class="text-xs text-gray-500 font-normal">ج.م</small></span>
+                            </div>
+                            
+                            <div class="bg-black/20 rounded-lg p-3 mt-4 text-center border border-white/5">
+                                <p class="text-xs text-gray-500"><i class="fas fa-money-bill-wave mb-1 block text-lg opacity-50"></i> الدفع عند الاستلام</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     `;
+    
     resultDiv.classList.remove('hidden');
 }
 
@@ -643,131 +784,166 @@ function addToCart(id) {
     showToast('تمت الإضافة للسلة', 'success');
 }
 
+
 function renderCart() {
     const container = document.getElementById('cart-items');
     const totalEl = document.getElementById('cart-total-price');
-    let total = 0;
     
+    // حساب الإجمالي للسلة الجانبية
+    const total = appState.cart.reduce((sum, item) => {
+        const p = calculatePrice(item.price, item.discount);
+        return sum + (p.final * item.qty);
+    }, 0);
+
+    // تحديث عداد السلة
+    const countEl = document.getElementById('cart-count');
+    if(countEl) {
+        if(appState.cart.length) {
+            countEl.textContent = appState.cart.reduce((s,i)=>s+i.qty,0);
+            countEl.classList.remove('hidden');
+            setTimeout(()=> countEl.classList.remove('scale-0'), 100);
+        } else {
+            countEl.classList.add('scale-0');
+            setTimeout(()=> countEl.classList.add('hidden'), 300);
+        }
+    }
+
+    // عرض العناصر في السلة الجانبية
     if(!appState.cart.length) {
-        container.innerHTML = '<div class="text-center py-20 text-gray-500 flex flex-col items-center"><i class="fas fa-shopping-basket text-5xl mb-4 opacity-20"></i><p>السلة فارغة حالياً</p><button onclick="closeCart(); router(\'gallery\')" class="mt-4 text-gold hover:underline">تصفح الكتب</button></div>';
-        totalEl.textContent = '0 ج.م';
-        document.getElementById('cart-count').textContent = '0';
-        document.getElementById('cart-count').classList.add('hidden', 'scale-0');
+        if(container) container.innerHTML = '<div class="text-center py-20 text-gray-500 flex flex-col items-center"><i class="fas fa-shopping-basket text-5xl mb-4 opacity-20"></i><p>السلة فارغة حالياً</p><button onclick="closeCart(); router(\'gallery\')" class="mt-4 text-gold hover:underline">تصفح الكتب</button></div>';
+        if(totalEl) totalEl.textContent = '0 ج.م';
         return;
     }
 
-    const countEl = document.getElementById('cart-count');
-    countEl.textContent = appState.cart.reduce((s,i)=>s+i.qty,0);
-    countEl.classList.remove('hidden');
-    setTimeout(()=> countEl.classList.remove('scale-0'), 100);
+    if(container) {
+        container.innerHTML = appState.cart.map(item => {
+            const p = calculatePrice(item.price, item.discount);
 
-    container.innerHTML = appState.cart.map(item => {
-        const p = calculatePrice(item.price, item.discount);
-        total += p.final * item.qty;
-        return `
-            <div class="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5 relative group hover:bg-white/10 transition">
-               <img src="${getImageUrl(item.image_url)}" class="w-16 h-20 object-cover rounded-lg shadow-sm">
-                <div class="flex-1 flex flex-col justify-between">
-                    <div>
-                        <h4 class="font-bold text-sm text-white line-clamp-1 mb-1">${item.title}</h4>
-                        <div class="text-gold text-sm font-bold">${p.final} ج.م</div>
-                    </div>
-                    <div class="flex items-center gap-3 bg-black/40 w-max px-2 py-1 rounded-lg border border-white/5 mt-1">
-                        <button onclick="updateQty('${item.id}', -1)" class="text-gray-400 hover:text-white px-1">-</button>
-                        <span class="text-sm w-4 text-center font-bold">${item.qty}</span>
-                        <button onclick="updateQty('${item.id}', 1)" class="text-gray-400 hover:text-white px-1">+</button>
-                    </div>
-                </div>
-                <button onclick="updateQty('${item.id}', -100)" class="absolute top-3 right-3 text-red-500/50 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
+return `
+    <div class="flex gap-4 bg-white/5 p-3 rounded-xl border border-white/5 relative group hover:bg-white/10 transition items-center">
+       <div class="w-16 h-24 shrink-0 bg-[#151515] rounded-lg overflow-hidden border border-white/10">
+            <img src="${getImageUrl(item.image_url)}" class="w-full h-full object-contain">
+       </div>
+        <div class="flex-1 flex flex-col justify-between h-24 py-1">
+            <div>
+                <h4 class="font-bold text-sm text-white line-clamp-2 mb-1 leading-snug">${item.title}</h4>
+                <div class="text-gold text-sm font-bold">${p.final} ج.م</div>
             </div>
-        `;
-    }).join('');
-    totalEl.textContent = total.toFixed(0) + ' ج.م';
-    
-    const checkSum = document.getElementById('checkout-summary');
-    if(checkSum) {
-        checkSum.innerHTML = appState.cart.map(i => {
-            const p = calculatePrice(i.price, i.discount);
-            return `<div class="flex justify-between mb-2 text-sm border-b border-white/5 pb-2 last:border-0">
-                <span class="text-gray-300">${i.title} <span class="text-gray-500 text-xs">x${i.qty}</span></span>
-                <span class="font-bold text-white">${p.final * i.qty}</span>
-            </div>`;
+            <div class="flex items-center gap-3 bg-black/40 w-max px-2 py-1 rounded-lg border border-white/5 mt-auto">
+                <button onclick="updateQty('${item.id}', -1)" class="text-gray-400 hover:text-white px-1">-</button>
+                <span class="text-sm w-4 text-center font-bold">${item.qty}</span>
+                <button onclick="updateQty('${item.id}', 1)" class="text-gray-400 hover:text-white px-1">+</button>
+            </div>
+        </div>
+        <button onclick="updateQty('${item.id}', -100)" class="absolute top-3 right-3 text-red-500/50 hover:text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
+    </div>
+`;
         }).join('');
-        document.getElementById('checkout-total').textContent = total.toFixed(0) + ' ج.م';
+    }
+    
+    if(totalEl) totalEl.textContent = total.toFixed(0) + ' ج.م';
+    
+    // تحديث قسم الـ Checkout إذا كان موجوداً
+    // (الإصلاح الجوهري هنا: نستخدم updateCheckoutTotals بدلاً من التعديل اليدوي)
+    const checkoutView = document.getElementById('checkout-view');
+    if(checkoutView && !checkoutView.classList.contains('hidden')) {
+        const checkSum = document.getElementById('checkout-summary');
+        if(checkSum) {
+             checkSum.innerHTML = appState.cart.map(i => {
+                const p = calculatePrice(i.price, i.discount);
+                return `<div class="flex justify-between mb-2 text-sm border-b border-white/5 pb-2 last:border-0">
+                    <span class="text-gray-300">${i.title} <span class="text-gray-500 text-xs">x${i.qty}</span></span>
+                    <span class="font-bold text-white">${p.final * i.qty}</span>
+                </div>`;
+            }).join('');
+        }
+        // استدعاء دالة الحسابات الجديدة لضمان تحديث الأرقام الصحيحة
+        if(typeof updateCheckoutTotals === 'function') {
+            updateCheckoutTotals();
+        }
     }
 }
 
+
+// 2. استبدل دالة إرسال الطلب (Event Listener) بهذا الكود:
 document.getElementById('checkout-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if(!appState.cart.length) return showToast('السلة فارغة', 'error');
-    const btn = e.target.querySelector('button');
+
+    // استخدام دالة الحسابات المركزية للحصول على القيم الصحيحة
+    const totals = updateCheckoutTotals(); 
+    
+    // التحقق من اختيار المحافظة
+    const govSelect = document.getElementById('governorate-select');
+    if (!govSelect.value) {
+        return showToast('يرجى اختيار المحافظة لحساب الشحن', 'error');
+    }
+
+    const btn = document.getElementById('confirm-order-btn');
     const oldText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> جاري المعالجة...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الطلب...';
     btn.disabled = true;
-    btn.classList.add('opacity-70');
 
     try {
         const fd = new FormData(e.target);
-        const priceText = document.getElementById('checkout-total').textContent;
-        const itemsStr = appState.cart.map(i => `${i.title} (x${i.qty})`).join(' | ');
-        const now = new Date().toLocaleString('en-GB'); // الوقت الحالي للتحديث الفوري
-
-const order = {
+        
+        // تجهيز البيانات
+        const orderData = {
             customer_name: fd.get('name'),
             phone: fd.get('phone'),
             email: fd.get('email'),
-            address: fd.get('address') + (fd.get('notes') ? ` | ملاحظات: ${fd.get('notes')}` : ''),
-            items: itemsStr,
-            total_price: priceText,
+            address: fd.get('address'),
+            notes: fd.get('notes'),
+            governorate: fd.get('governorate'),
+            
+            // البيانات المالية من دالة الحسابات مباشرة
+            books_price: totals.subtotal,
+            shipping_cost: totals.shipping,
+            total_price: totals.total, 
+            
+            items: appState.cart.map(i => `${i.title} (x${i.qty})`).join(' | '),
+            cartData: JSON.stringify(appState.cart),
             status: 'جديد',
-            // --- الإضافة الجديدة هنا ---
-            cartData: JSON.stringify(appState.cart), // إرسال بيانات السلة للخصم من المخزون
-            // ------------------------
             action: 'placeOrder'
         };
-        
-        // إرسال الطلب
+
         const res = await fetch(`${API_URL}?action=placeOrder`, { 
-            method: 'POST', 
-            body: JSON.stringify(order) 
+            method: 'POST', body: JSON.stringify(orderData) 
         });
         
         const result = await res.json();
         
         if(result.success) {
-            // === التحديث الفوري للبيانات محلياً (هنا الإضافة الجديدة) ===
-            const newLocalOrder = {
+            // حفظ محلي
+             const newLocalOrder = {
                 order_id: result.orderId,
                 status: 'جديد',
-                total_price: order.total_price,
-                items: order.items,
-                date: now,           // لكي يظهر في التتبع فوراً
-                date_preparing: '',
-                date_shipped: '',
-                date_delivered: '',
-                date_cancelled: ''
+                total_price: orderData.total_price + ' ج.م', // إضافة العملة للعرض
+                items: orderData.items,
+                date: new Date().toLocaleString('en-GB'),
+                date_preparing: '', date_shipped: '', date_delivered: '', date_cancelled: ''
             };
-            appState.orders.push(newLocalOrder); // إضافة الطلب لقائمة الطلبات المحملة
-            // ========================================================
+            appState.orders.push(newLocalOrder);
             saveOrderLocal(result.orderId);
+            
             document.getElementById('success-order-id').textContent = result.orderId;
             document.getElementById('success-modal').classList.remove('hidden');
             appState.cart = [];
             saveCart(); renderCart();
             e.target.reset();
+            govSelect.value = ""; // إعادة تعيين المحافظة
+            updateCheckoutTotals(); // تصفير الأرقام
         } else {
-            throw new Error(result.error || 'حدث خطأ غير معروف');
+            throw new Error(result.error);
         }
     } catch(err) {
         console.error(err);
-        showToast('فشل إتمام الطلب: تأكد من الاتصال بالإنترنت', 'error');
+        showToast('خطأ في الاتصال', 'error');
     } finally {
         btn.innerHTML = oldText;
         btn.disabled = false;
-        btn.classList.remove('opacity-70');
     }
 });
-
 // === Utilities ===
 function calculatePrice(p, d) {
     const price = parseFloat(p) || 0;
@@ -800,7 +976,7 @@ function copyOrderId() {
     navigator.clipboard.writeText(id).then(() => showToast('تم نسخ رقم الطلب', 'success'));
 }
 
-// Router & Nav
+
 function router(view) {
     document.querySelectorAll('.view-section').forEach(el => {
         el.classList.add('hidden');
@@ -811,9 +987,11 @@ function router(view) {
     if (view !== 'home') stopAutoSlide();
 
     const target = document.getElementById(view + '-view');
-    target.classList.remove('hidden');
-    void target.offsetWidth; 
-    target.classList.add('slide-in');
+    if(target) {
+        target.classList.remove('hidden');
+        void target.offsetWidth; 
+        target.classList.add('slide-in');
+    }
     
     appState.currentView = view;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -821,14 +999,21 @@ function router(view) {
     // Update nav state
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('text-gold', 'bg-white/10'));
 
+    // --- التعديلات تبدأ هنا ---
     if(view === 'gallery') {
         renderGallery();
     } else if (view === 'home') {
         renderStackSlider();
         renderFeatured();
-    }else if (view === 'tracking') { 
+    } else if (view === 'tracking') { 
         renderOrderHistory();
+    } else if (view === 'checkout') {
+        // هذا هو الجزء الذي يحل مشكلتك
+        renderCart(); // لرسم منتجات الملخص
+        setupCheckoutLogic(); // للتأكد من تجهيز القائمة
+        setTimeout(() => updateCheckoutTotals(), 50); // لحساب السعر فوراً
     }
+    // --- انتهى التعديل ---
 }
 
 function openCart() { document.getElementById('cart-modal').classList.remove('-translate-x-full'); }
@@ -961,3 +1146,60 @@ function trackFromHistory(id) {
         }, 100);
     }
 }
+
+// 
+
+// 1. قائمة أسعار الشحن (تعديل حسب رغبتك)
+
+
+// 2. دالة لتهيئة قائمة المحافظات وحساب السعر
+function setupCheckoutLogic() {
+    const govSelect = document.getElementById('governorate-select');
+    if(!govSelect) return;
+
+    // ملء القائمة
+    govSelect.innerHTML = '<option value="" disabled selected>اختر المحافظة لتحديد الشحن...</option>';
+    Object.keys(SHIPPING_RATES).sort().forEach(gov => {
+        govSelect.add(new Option(gov, gov));
+    });
+
+    // الاستماع للتغيير
+    govSelect.addEventListener('change', updateCheckoutTotals);
+}
+// [في ملف index.js]
+function updateCheckoutTotals() {
+    // 1. حساب مجموع الكتب (Subtotal)
+    const cartTotal = appState.cart.reduce((sum, item) => {
+        const p = calculatePrice(item.price, item.discount);
+        return sum + (p.final * item.qty);
+    }, 0);
+
+    const govSelect = document.getElementById('governorate-select');
+    const selectedGov = govSelect ? govSelect.value : '';
+    const shippingCost = selectedGov ? (SHIPPING_RATES[selectedGov] || 0) : 0;
+    const subTotalEl = document.getElementById('summary-subtotal');
+    if(subTotalEl) subTotalEl.textContent = cartTotal + ' ج.م';
+    const shippingEl = document.getElementById('summary-shipping');
+    if(shippingEl) {
+        if (selectedGov) {
+            shippingEl.textContent = shippingCost + ' ج.م';
+            shippingEl.classList.remove('text-gray-500');
+            shippingEl.classList.add('text-gold');
+        } else {
+            shippingEl.textContent = '--';
+            shippingEl.classList.remove('text-gold');
+            shippingEl.classList.add('text-gray-500');
+        }
+    }
+    const finalTotal = cartTotal + shippingCost;
+    const totalEl = document.getElementById('summary-total');
+    if(totalEl) totalEl.textContent = finalTotal + ' ج.م';
+    return { subtotal: cartTotal, shipping: shippingCost, total: finalTotal };
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    setupCheckoutLogic(); 
+});
+
+

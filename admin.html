@@ -338,59 +338,81 @@
         </div>
     </div>
 
-    <div id="order-details-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass w-full max-w-3xl p-0 rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
-            <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
-                <div>
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fas fa-file-invoice text-gold"></i> تفاصيل الطلب
-                    </h3>
-                    <p class="text-xs text-gray-400 mt-1" id="modal-order-id">#ORD-000</p>
-                </div>
-                <button onclick="document.getElementById('order-details-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+<div id="order-details-modal" class="fixed inset-0 bg-black/95 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="glass w-full max-w-3xl p-0 rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-white/10">
+        
+        <div class="p-5 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <div>
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-file-invoice text-gold"></i> تفاصيل الطلب
+                </h3>
+                <p class="text-xs text-gray-400 mt-1" id="modal-order-id">#ORD-000</p>
             </div>
+            <button onclick="document.getElementById('order-details-modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
             
-            <div class="p-6 overflow-y-auto custom-scrollbar space-y-6">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">الحالة الحالية</span>
-                        <div id="modal-order-status" class="text-xl font-bold text-gold">جديد</div>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 text-xs block mb-1">تاريخ الإنشاء</span>
-                        <div id="modal-order-date" class="text-white">...</div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
+                <div>
+                    <span class="text-gray-400 text-xs block mb-1">الحالة الحالية</span>
+                    <div id="modal-order-status" class="text-xl font-bold text-gold">جديد</div>
                 </div>
-
-                <div class="space-y-3">
-                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">بيانات العميل</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div><span class="text-gray-500 w-20 inline-block">الاسم:</span> <span id="modal-customer-name" class="text-white font-bold">...</span></div>
-                        <div><span class="text-gray-500 w-20 inline-block">الهاتف:</span> <span id="modal-customer-phone" class="text-white">...</span></div>
-                        <div><span class="text-gray-500 w-20 inline-block">الإيميل:</span> <span id="modal-customer-email" class="text-white">...</span></div>
-                        <div class="col-span-1 md:col-span-2"><span class="text-gray-500 w-20 inline-block">العنوان:</span> <span id="modal-customer-address" class="text-white bg-white/5 px-2 py-1 rounded">...</span></div>
-                    </div>
+                <div>
+                    <span class="text-gray-400 text-xs block mb-1">تاريخ الإنشاء</span>
+                    <div id="modal-order-date" class="text-white">...</div>
                 </div>
-
-                <div class="space-y-3">
-                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">المنتجات المطلوبة</h4>
-                    <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5">
-                        </div>
-                    <div class="flex justify-end pt-2">
-                        <div class="text-lg font-bold">الإجمالي: <span id="modal-order-total" class="text-gold">0</span></div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h4 class="text-gold font-bold border-b border-white/10 pb-2">سجل الحالات</h4>
-                    <div class="space-y-2 text-sm" id="modal-order-history">
-                        </div>
-                </div>
-
             </div>
+
+            <div class="space-y-3">
+                <h4 class="text-gold font-bold border-b border-white/10 pb-2 text-sm">بيانات العميل</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-gray-500 w-20 inline-block">الاسم:</span> <span id="modal-customer-name" class="text-white font-bold">...</span></div>
+                    <div><span class="text-gray-500 w-20 inline-block">الهاتف:</span> <span id="modal-customer-phone" class="text-white">...</span></div>
+                    <div><span class="text-gray-500 w-20 inline-block">الإيميل:</span> <span id="modal-customer-email" class="text-white">...</span></div>
+                    <div class="col-span-1 md:col-span-2"><span class="text-gray-500 w-20 inline-block">العنوان:</span> <span id="modal-customer-address" class="text-white bg-white/5 px-2 py-1 rounded">...</span></div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h4 class="text-gold font-bold border-b border-white/10 pb-2 text-sm">المنتجات المطلوبة</h4>
+                <div id="modal-order-items" class="bg-black/30 rounded-lg p-4 text-sm space-y-2 border border-white/5 flex flex-col">
+                    </div>
+            </div>
+
+            <div class="bg-black/40 p-4 rounded-xl border border-white/5 space-y-2">
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span>سعر الكتب:</span>
+                    <span id="modal-books-price" class="text-white">...</span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-400">
+                    <span>المحافظة:</span>
+                    <span id="modal-order-gov" class="text-white">...</span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-400 border-b border-white/10 pb-2 mb-2">
+                    <span>مصاريف الشحن:</span>
+                    <span id="modal-shipping-cost" class="text-gold">...</span>
+                </div>
+                <div class="flex justify-between font-bold text-lg">
+                    <span class="text-white">الإجمالي النهائي:</span>
+                    <span id="modal-order-total-final" class="text-green-400">...</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h4 class="text-gold font-bold border-b border-white/10 pb-2 text-sm">سجل الحالات</h4>
+                <div class="space-y-2 text-sm" id="modal-order-history"></div>
+            </div>
+
+            <div class="pt-4 border-t border-white/10">
+                <button id="btn-delete-order" class="w-full bg-red-900/20 text-red-400 border border-red-500/30 py-3 rounded-xl hover:bg-red-600 hover:text-white transition font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-trash-alt"></i> حذف الطلب نهائياً
+                </button>
+            </div>
+
         </div>
     </div>
+</div>
 
     <div id="toast-container" class="fixed bottom-6 left-6 z-[100] flex flex-col gap-2"></div>
 

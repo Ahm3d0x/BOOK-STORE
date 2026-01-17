@@ -236,73 +236,97 @@
     </div>
 </section>
 
-        <section id="checkout-view" class="view-section hidden slide-in">
-            <div class="container mx-auto px-4 max-w-4xl">
-                <div class="glass rounded-3xl p-8 md:p-12 relative overflow-hidden border border-white/10">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10"></div>
-                    <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
-                        <span class="bg-gold text-black w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-glow"><i class="fas fa-shipping-fast"></i></span>
-                        إتمام الطلب
-                    </h2>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-1 order-2 lg:order-1">
-                            <div class="bg-black/30 rounded-xl p-5 border border-white/5 sticky top-24">
-                                <h3 class="font-bold text-gray-300 mb-4 text-sm uppercase tracking-wider">ملخص السلة</h3>
-                                <div id="checkout-summary" class="space-y-3 mb-4 max-h-60 overflow-y-auto custom-scrollbar pr-2"></div>
-                                <div class="border-t border-white/10 pt-4 mt-4">
-                                    <div class="flex justify-between items-center text-xl font-bold">
-                                        <span>الإجمالي:</span>
-                                        <span class="text-gold" id="checkout-total">0 ج.م</span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 mt-2">* الدفع عند الاستلام</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="lg:col-span-2 order-1 lg:order-2">
-<form id="checkout-form" class="space-y-5">
-    
-    <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
-        <i class="fas fa-info-circle text-blue-400 mt-1"></i>
-        <div class="text-sm text-gray-300">
-            <span class="text-white font-bold block mb-1">بيانات التواصل مهمة جداً!</span>
-            يرجى التأكد من صحة <span class="text-gold">رقم الهاتف</span> و <span class="text-gold">البريد الإلكتروني</span> لنتمكن من إرسال تفاصيل الطلب وتأكيده لك، ولتسهيل وصول المندوب.
-        </div>
-    </div>
+<section id="checkout-view" class="view-section hidden slide-in">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <h2 class="text-3xl font-bold mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
+            <span class="bg-gold text-black w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-glow"><i class="fas fa-shipping-fast"></i></span>
+            إتمام الطلب
+        </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="space-y-2">
-            <label class="text-sm text-gray-400">الاسم بالكامل <span class="text-red-500">*</span></label>
-            <input type="text" name="name" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600" placeholder="الاسم الثلاثي">
-        </div>
-        <div class="space-y-2">
-            <label class="text-sm text-gray-400">رقم الهاتف <span class="text-red-500">*</span></label>
-            <input type="tel" name="phone" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600" placeholder="01xxxxxxxxx">
-        </div>
-    </div>
-    
-    <div class="space-y-2">
-        <label class="text-sm text-gray-400">البريد الإلكتروني (هام للفاتورة)</label>
-        <input type="email" name="email" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600" placeholder="email@example.com">
-    </div>
-
-    <div class="space-y-2">
-        <label class="text-sm text-gray-400">العنوان بالتفصيل <span class="text-red-500">*</span></label>
-        <textarea name="address" required rows="3" placeholder="المحافظة - المدينة - اسم الشارع - رقم العقار - علامة مميزة" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition"></textarea>
-    </div>
-    
-    <div class="space-y-2">
-        <label class="text-sm text-gray-400">ملاحظات إضافية</label>
-        <textarea name="notes" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition"></textarea>
-    </div>
-    
-    <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition transform hover:-translate-y-1 mt-4">تأكيد الطلب الآن</button>
-</form>
+        <form id="checkout-form" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative">
+            
+            <div class="lg:col-span-7 glass rounded-3xl p-6 md:p-8 border border-white/10">
+                <h3 class="font-bold text-white mb-6 text-xl flex items-center gap-2">
+                    <i class="fas fa-user-circle text-gold"></i> بيانات الشحن
+                </h3>
+                
+                <div class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-2">
+                            <label class="text-sm text-gray-400">الاسم بالكامل <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600">
                         </div>
+                        <div class="space-y-2">
+                            <label class="text-sm text-gray-400">رقم الهاتف <span class="text-red-500">*</span></label>
+                            <input type="tel" name="phone" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm text-gray-400">المحافظة <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <select id="governorate-select" name="governorate" required class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition appearance-none cursor-pointer text-white">
+                                <option value="" disabled selected>اختر المحافظة لتحديد سعر الشحن...</option>
+                                </select>
+                            <i class="fas fa-chevron-down absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm text-gray-400">العنوان بالتفصيل <span class="text-red-500">*</span></label>
+                        <textarea name="address" required rows="2" placeholder="المدينة - اسم الشارع - رقم العقار - علامة مميزة" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm text-gray-400">البريد الإلكتروني</label>
+                        <input type="email" name="email" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition placeholder-gray-600">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm text-gray-400">ملاحظات إضافية</label>
+                        <textarea name="notes" rows="2" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 focus:border-gold outline-none transition"></textarea>
                     </div>
                 </div>
             </div>
-        </section>
 
+            <div class="lg:col-span-5 sticky top-24">
+                <div class="glass rounded-3xl p-6 md:p-8 border border-gold/20 shadow-[0_0_30px_rgba(255,215,0,0.05)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full blur-3xl -z-10"></div>
+                    
+                    <h3 class="font-bold text-white mb-6 text-xl flex items-center gap-2">
+                        <i class="fas fa-receipt text-gold"></i> ملخص الطلب
+                    </h3>
+
+                    <div id="checkout-summary" class="space-y-3 mb-6 max-h-48 overflow-y-auto custom-scrollbar pr-2 border-b border-white/10 pb-4">
+                        </div>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-gray-400">
+                            <span>مجموع الكتب:</span>
+                            <span id="summary-subtotal" class="text-white font-bold">0 ج.م</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400 items-center">
+                            <span class="flex items-center gap-2"><i class="fas fa-truck text-gold"></i> مصاريف الشحن:</span>
+                            <span id="summary-shipping" class="text-gold font-bold">--</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-white/10 pt-4 mt-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-lg font-bold text-white">الإجمالي النهائي:</span>
+                            <span id="summary-total" class="text-2xl font-bold text-gold">0 ج.م</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-6 text-left">* الدفع عند الاستلام</p>
+                        
+                        <button type="submit" id="confirm-order-btn" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-4 rounded-xl shadow-lg hover:shadow-gold/50 transition transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            تأكيد الطلب الآن <i class="fas fa-check-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
         <section id="about-view" class="view-section hidden slide-in">
             <div class="container mx-auto px-4 max-w-7xl text-center py-10">
                 <div class="glass rounded-3xl p-10 md:p-16 border border-white/5 shadow-2xl relative overflow-hidden">
@@ -372,54 +396,60 @@
         </div>
     </div>
 
-    <div id="book-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-xl opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeBookModal()">
-<div class="glass w-full max-w-6xl rounded-3xl overflow-hidden relative shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col md:flex-row max-h-[90vh] border border-white/10" id="book-modal-content">
+<div id="book-modal" class="fixed inset-0 bg-black/95 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-xl opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeBookModal()">
     
-    <button onclick="closeBookModal()" class="absolute top-4 left-4 z-20 bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition backdrop-blur-md shadow-lg border border-white/10"><i class="fas fa-times"></i></button>
-    
-    <div class="w-full md:w-1/2 bg-[#050505] relative flex items-center justify-center p-2 md:p-4"> <div class="relative w-full max-w-md aspect-square rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/5 overflow-hidden group">
-            <img id="modal-book-img" src="" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700" onerror="this.src='https://placehold.co/600x600?text=No+Image'">
+    <div class="glass w-full max-w-6xl rounded-3xl overflow-hidden relative shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col md:flex-row max-h-[90vh] border border-white/10" id="book-modal-content">
+        
+        <button onclick="closeBookModal()" class="absolute top-4 left-4 z-20 bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-600 transition backdrop-blur-md shadow-lg border border-white/10">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="w-full md:w-1/2 relative flex items-center justify-center p-6 md:p-10 overflow-hidden bg-[#0a0a0a]">
             
-            <div id="modal-discount-badge" class="absolute top-4 right-4 bg-red-600 text-white font-bold px-3 py-1 rounded-lg shadow-lg hidden z-10 text-lg border border-white/20"></div>
-        </div>
+            <img id="modal-bg-blur" src="" class="absolute inset-0 w-full h-full object-cover opacity-50 blur-2xl scale-110 pointer-events-none transition-all duration-700">
+            
+            <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
 
-        <img id="modal-bg-blur" src="" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-3xl pointer-events-none">
-    </div>
-
-    <div class="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto custom-scrollbar flex flex-col bg-gradient-to-b from-white/5 to-[#0a0a0a]">
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <div id="modal-book-tags" class="flex flex-wrap gap-2 mb-2"></div>
-                <h2 id="modal-book-title" class="text-3xl md:text-5xl font-black text-white mb-2 leading-tight"></h2>
-                <p class="text-gray-400 text-lg">بقلم: <span id="modal-book-author" class="text-gold font-semibold"></span></p>
+            <div class="relative z-10 w-full max-w-[340px] aspect-[2/3] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/10 bg-[#151515] flex items-center justify-center overflow-hidden group">
+                 
+                 <img id="modal-book-img" src="" class="w-full h-full object-contain p-0.5 transition duration-500 group-hover:scale-105 drop-shadow-2xl" onerror="this.src='https://placehold.co/600x900?text=No+Image'">
+                 
+                 <div id="modal-discount-badge" class="absolute top-3 right-3 bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg hidden z-20 text-sm border border-white/20 backdrop-blur-md"></div>
             </div>
-            <button onclick="shareBook()" class="text-gray-400 hover:text-gold p-3 rounded-full hover:bg-white/5 transition"><i class="fas fa-share-nodes text-2xl"></i></button>
         </div>
 
-<div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
-    
-    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">اللغة</span><span id="modal-book-language" class="font-bold text-white text-sm"></span></div>
-    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الناشر</span><span id="modal-book-publisher" class="font-bold text-white text-sm"></span></div>
-    
-    <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
-</div>
-
-        <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed mb-8 flex-grow">
-            <h3 class="text-white font-bold mb-2 text-lg border-b border-white/10 pb-2 inline-block">نبذة عن الكتاب:</h3>
-            <p id="modal-book-desc" class="text-sm md:text-base opacity-90"></p>
-        </div>
-
-        <div class="mt-auto border-t border-white/10 pt-6 flex items-center justify-between gap-6">
-            <div>
-                <div id="modal-book-old-price" class="text-sm text-gray-500 line-through decoration-red-500 hidden"></div>
-                <div class="flex items-baseline gap-1"><span id="modal-book-price" class="text-4xl font-bold text-gold"></span><span class="text-gray-400 text-sm">ج.م</span></div>
+        <div class="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto custom-scrollbar flex flex-col bg-gradient-to-b from-white/5 to-[#0a0a0a]">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <div id="modal-book-tags" class="flex flex-wrap gap-2 mb-2"></div>
+                    <h2 id="modal-book-title" class="text-3xl md:text-5xl font-black text-white mb-2 leading-tight"></h2>
+                    <p class="text-gray-400 text-lg">بقلم: <span id="modal-book-author" class="text-gold font-semibold"></span></p>
+                </div>
+                <button onclick="shareBook()" class="text-gray-400 hover:text-gold p-3 rounded-full hover:bg-white/5 transition"><i class="fas fa-share-nodes text-2xl"></i></button>
             </div>
-            <button id="modal-add-btn" class="bg-white text-black font-bold py-4 px-8 rounded-xl hover:bg-gold transition flex-1 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-gold/50 transform active:scale-95"><span>إضافة للسلة</span> <i class="fas fa-cart-plus"></i></button>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">التصنيف</span><span id="modal-book-category" class="font-bold text-white text-sm"></span></div>
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">اللغة</span><span id="modal-book-language" class="font-bold text-white text-sm"></span></div>
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الناشر</span><span id="modal-book-publisher" class="font-bold text-white text-sm"></span></div>
+                <div class="bg-white/5 p-2 rounded-xl border border-white/5 text-center"><span class="block text-gray-500 text-[10px]">الإضافة</span><span id="modal-book-date" class="font-bold text-white text-sm"></span></div>
+            </div>
+
+            <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed mb-8 flex-grow">
+                <h3 class="text-white font-bold mb-2 text-lg border-b border-white/10 pb-2 inline-block">نبذة عن الكتاب:</h3>
+                <p id="modal-book-desc" class="text-sm md:text-base opacity-90"></p>
+            </div>
+
+            <div class="mt-auto border-t border-white/10 pt-6 flex items-center justify-between gap-6">
+                <div>
+                    <div id="modal-book-old-price" class="text-sm text-gray-500 line-through decoration-red-500 hidden"></div>
+                    <div class="flex items-baseline gap-1"><span id="modal-book-price" class="text-4xl font-bold text-gold"></span><span class="text-gray-400 text-sm">ج.م</span></div>
+                </div>
+                <button id="modal-add-btn" class="bg-white text-black font-bold py-4 px-8 rounded-xl hover:bg-gold transition flex-1 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-gold/50 transform active:scale-95"><span>إضافة للسلة</span> <i class="fas fa-cart-plus"></i></button>
+            </div>
         </div>
     </div>
 </div>
-    </div>
 
     <div id="toast-container" class="fixed top-24 left-6 z-[100] flex flex-col gap-3 pointer-events-none"></div>
     <div id="success-modal" class="fixed inset-0 bg-black/95 z-[95] hidden flex items-center justify-center p-4 backdrop-blur-xl">
