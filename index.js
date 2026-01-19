@@ -191,7 +191,57 @@ if(s.site_logo) {
             if(map[k] && v) socialDiv.innerHTML += `<a href="${v}" target="_blank" class="${map[k].color} hover:scale-125 transition"><i class="fab ${map[k].icon}"></i></a>`;
         }
     }
+    generateDynamicManifest();
 }
+// [index.js] تحديث دالة المانيفست لإصلاح خطأ start_url
+function generateDynamicManifest() {
+    const s = appState.settings;
+    if (!s) return;
+
+    // تجهيز اللوجو
+    const iconUrl = s.site_logo ? getImageUrl(s.site_logo) : "https://placehold.co/512x512?text=App";
+
+    // ✅ الحل هنا: استخدام الرابط الكامل للصفحة الحالية بدلاً من ./index.html
+    // هذا يضمن أن المتصفح سيعرف المكان الصحيح لبدء التطبيق
+    const currentUrl = window.location.origin + window.location.pathname;
+
+    const manifestObject = {
+        "name": s.site_name || "Book.com",
+        "short_name": s.site_name || "Book.com",
+        "start_url": currentUrl, // 👈 التغيير هنا (رابط مطلق)
+        "display": "standalone",
+        "background_color": "#050505",
+        "theme_color": "#FFD700",
+        "orientation": "portrait-primary",
+        "scope": window.location.origin + "/", // تحديد نطاق التطبيق
+        "icons": [
+            {
+                "src": iconUrl,
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": iconUrl,
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    };
+
+    const stringManifest = JSON.stringify(manifestObject);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'manifest';
+        document.head.appendChild(link);
+    }
+    
+    link.href = manifestURL;
+}
+
 // === Filter Logic ===
 function populateFilters() {
     const books = appState.books;

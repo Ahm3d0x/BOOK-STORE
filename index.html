@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
+    <link rel="manifest" href="manifest.json">
 <link rel="icon" id="favicon-icon" href="https://placehold.co/32x32?text=B">
     <title>Book.com - عالم المعرفة</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -510,7 +511,13 @@
             </div>
         </div>
     </div>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service Worker Registered ✅'))
+      .catch((err) => console.error('Service Worker Failed ❌', err));
+  }
+</script>
     <script src="index.js"></script>
 </body>
 </html>
