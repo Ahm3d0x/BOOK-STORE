@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbw6rMbPKO0Zz4vAeRnSWSLVdSJ67B-a-eoPliy3RCoOOjuyc5OiFTgDo2kdWpl7UlUc/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwMpTQXDLuT6I0f6DafkU-gGp2NxiOn2YWysZt12-qboWoOIfhUzklc3Mm25chdNBz3/exec';
 
 
 // === Global Variables ===
@@ -239,15 +239,46 @@ async function loadInventory() {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-red-400">فشل تحميل البيانات: ${err}</td></tr>`;
     }
 }
+// [admin.js] دالة لتبديل حالة تمييز الكتاب
+async function toggleBookFeatured(id, newState) {
+    // تحديث واجهة المستخدم فورياً (Optimistic Update) لجعلها سريعة
+    const bookIndex = allBooksData.findIndex(b => b.id == id);
+    if(bookIndex > -1) {
+        allBooksData[bookIndex].featured = newState ? 'TRUE' : 'FALSE';
+        renderInventory(allBooksData); // إعادة الرسم فوراً
+    }
 
+    try {
+        await fetch(`${API_URL}?action=updateBook`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: id,
+                featured: newState ? 'TRUE' : 'FALSE'
+            })
+        });
+        showToast(newState ? 'تمت إضافة الكتاب للمختارات 🌟' : 'تمت إزالة الكتاب من المختارات', 'success');
+    } catch(e) {
+        showToast('فشل تحديث الحالة', 'error');
+        // تراجع في حالة الخطأ
+        if(bookIndex > -1) {
+            allBooksData[bookIndex].featured = !newState ? 'TRUE' : 'FALSE';
+            renderInventory(allBooksData);
+        }
+    }
+}
+// [admin.js]
 function renderInventory(books) {
     const tbody = document.getElementById('inventory-table-body');
     if(!tbody) return;
     if(!books.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-gray-500">لا توجد نتائج</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center p-8 text-gray-500">لا توجد نتائج</td></tr>';
         return;
     }
-    tbody.innerHTML = books.map(book => `
+    tbody.innerHTML = books.map(book => {
+        // التحقق هل الكتاب مميز أم لا
+        const isFeatured = String(book.featured).toUpperCase() === 'TRUE';
+        
+        return `
         <tr class="hover:bg-white/5 transition group border-b border-white/5 last:border-0">
             <td class="p-4">
                 <div class="flex items-center gap-3">
@@ -264,14 +295,22 @@ function renderInventory(books) {
                 <div class="text-xs text-gray-300 mb-1">${book.category || 'عام'}</div>
                 <span class="text-[10px] bg-gray-700 px-2 py-1 rounded text-gray-400">${book.language || '-'}</span>
             </td>
+            
+            <td class="p-4 text-center">
+                <button onclick="toggleBookFeatured('${book.id}', ${!isFeatured})" 
+                        class="text-xl transition transform hover:scale-125 ${isFeatured ? 'text-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'text-gray-600 hover:text-gray-400'}">
+                    <i class="${isFeatured ? 'fas' : 'far'} fa-star"></i>
+                </button>
+            </td>
+
             <td class="p-4 text-center">
                 <div class="flex justify-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
-                    <button onclick='openEditModal(${JSON.stringify(book).replace(/'/g, "&#39;")})' class="bg-blue-600 p-2 rounded text-white hover:bg-blue-500"><i class="fas fa-edit"></i></button>
+                    <button onclick='openEditModal(${JSON.stringify(book).replace(/'/g, "'")})' class="bg-blue-600 p-2 rounded text-white hover:bg-blue-500"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteBook('${book.id}')" class="bg-red-600 p-2 rounded text-white hover:bg-red-500"><i class="fas fa-trash"></i></button>
                 </div>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function filterInventory(term) {

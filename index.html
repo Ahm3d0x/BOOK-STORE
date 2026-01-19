@@ -49,7 +49,14 @@
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
         .book-card:hover .book-cover-wrapper { box-shadow: 0 20px 40px -10px rgba(255, 215, 0, 0.15); }
-        
+        /* [index.html] داخل <style> */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
         select option { background-color: #1a1a1a; color: white; padding: 10px; }
         
         /* Slider Styles */
@@ -122,17 +129,29 @@
             </div>
 
             <div class="container mx-auto px-4 mb-16">
-                <div class="flex justify-between items-end mb-8 border-b border-white/5 pb-4">
-                    <div>
-                        <h2 class="text-3xl font-bold text-white mb-1">أحدث الإضافات</h2>
-                        <p class="text-gray-400 text-sm">كتب وصلت حديثاً للمكتبة</p>
-                    </div>
-                    <button onclick="router('gallery')" class="text-gold hover:text-white transition flex items-center gap-2 bg-gold/10 px-4 py-2 rounded-full text-sm font-bold border border-gold/20">عرض المكتبة كاملة <i class="fas fa-arrow-left"></i></button>
-                </div>
+<div class="flex justify-between items-end mb-8 border-b border-white/5 pb-4">
+    <div>
+        <h2 class="text-3xl font-bold text-white mb-1">ترشيحاتنا لك</h2> <p class="text-gray-400 text-sm">مجموعة مميزة مختارة بعناية</p>
+    </div>
+    <button onclick="router('gallery')" ...>عرض المكتبة كاملة <i class="fas fa-arrow-left"></i></button>
+</div>
                 
-                <div id="featured-books" class="flex overflow-x-auto md:grid md:grid-cols-5 gap-6 pb-8 snap-x hide-scrollbar md:pb-0">
-                    <div class="w-full col-span-5 text-center py-10 text-gray-500">جاري التحميل...</div>
-                </div>
+<div class="relative group">
+    <button onclick="document.getElementById('featured-books').scrollBy({left: 300, behavior: 'smooth'})" 
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 text-gold p-3 rounded-l-xl hover:bg-gold hover:text-black transition shadow-2xl opacity-0 group-hover:opacity-100 hidden md:block">
+        <i class="fas fa-chevron-right text-xl"></i>
+    </button>
+
+    <div id="featured-books" 
+         class="flex gap-5 overflow-x-auto snap-x scroll-smooth hide-scrollbar py-8 px-1">
+        <div class="w-full text-center py-10 text-gray-500">جاري التحميل...</div>
+    </div>
+
+    <button onclick="document.getElementById('featured-books').scrollBy({left: -300, behavior: 'smooth'})" 
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-black/80 text-gold p-3 rounded-r-xl hover:bg-gold hover:text-black transition shadow-2xl opacity-0 group-hover:opacity-100 hidden md:block">
+        <i class="fas fa-chevron-left text-xl"></i>
+    </button>
+</div>
             </div>
         </section>
 
@@ -491,19 +510,7 @@
             </div>
         </div>
     </div>
-<div id="confirm-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div id="confirm-box" class="glass max-w-sm w-full p-6 rounded-2xl border border-white/10 shadow-2xl text-center transform scale-95 opacity-0 transition-all duration-300">
-            <div class="w-16 h-16 bg-yellow-500/20 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
-                <i class="fas fa-exclamation"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-2">هل أنت متأكد؟</h3>
-            <p id="confirm-message" class="text-gray-400 mb-6 text-sm">هل تريد حقاً تنفيذ هذا الإجراء؟</p>
-            <div class="flex gap-3">
-                <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-xl font-bold transition">نعم، نفذ</button>
-                <button onclick="closeConfirmModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2.5 rounded-xl font-bold transition">إلغاء</button>
-            </div>
-        </div>
-    </div>
+
     <script src="index.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbw6rMbPKO0Zz4vAeRnSWSLVdSJ67B-a-eoPliy3RCoOOjuyc5OiFTgDo2kdWpl7UlUc/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwMpTQXDLuT6I0f6DafkU-gGp2NxiOn2YWysZt12-qboWoOIfhUzklc3Mm25chdNBz3/exec';
 let appState = {
     books: [],
     settings: {},
@@ -43,18 +43,36 @@ const SHIPPING_RATES = {
     "جنوب سيناء": 80
 };
 // === Init ===
+// [index.js] استبدل الجزء العلوي الخاص بالتحميل بهذا الكود الجديد 👇
+
+// [index.js] استبدل الجزء القديم بهذا الكود الجديد لتسريع الموقع 🚀
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('current-year').textContent = new Date().getFullYear();
-    showToast('جاري الاتصال بالمكتبة...', 'info');
     
+    // 1. (جديد) التحميل الفوري من الذاكرة المحلية (الكاش)
+    // هذا سيجعل الموقع يفتح فوراً للزوار السابقين
+    loadFromCache();
+    
+    // إذا كانت البيانات موجودة في الكاش، نعرض التطبيق فوراً ولا نظهر رسالة الانتظار
+    if (appState.books.length > 0) {
+        renderApp();
+    } else {
+        showToast('جاري الاتصال بالمكتبة...', 'info');
+    }
+    
+    // 2. جلب البيانات الحديثة في الخلفية (تحديث صامت)
+    // العميل يتصفح الموقع بينما يتم تحديث البيانات
     await Promise.all([fetchBooks(), fetchSettings(), fetchSlider(), fetchOrdersForTracking()]);
     
     populateFilters();
     setupFilterListeners();
-
     loadCartFromStorage();
+    
+    // إعادة الرسم بالبيانات الجديدة لضمان التحديث
     renderApp();
     
+    // التعامل مع الروابط المباشرة للكتب
     const urlParams = new URLSearchParams(window.location.search);
     const bookId = urlParams.get('bookId');
     if (bookId) {
@@ -63,19 +81,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// === API Calls ===
+// --- دوال التحميل الجديدة (مع الكاش) ---
+
+// دالة جديدة لقراءة البيانات المخزنة في المتصفح
+function loadFromCache() {
+    try {
+        const cachedBooks = localStorage.getItem('db_books');
+        const cachedSettings = localStorage.getItem('db_settings');
+        const cachedSlider = localStorage.getItem('db_slider');
+        
+        if (cachedBooks) appState.books = JSON.parse(cachedBooks);
+        if (cachedSettings) appState.settings = JSON.parse(cachedSettings);
+        if (cachedSlider) appState.slider = JSON.parse(cachedSlider);
+        
+        // تحديث اللوجو والاسم فوراً من الكاش
+        if(appState.settings) updateSiteBranding();
+    } catch(e) { console.error('Cache Error', e); }
+}
+
 async function fetchBooks() {
     try {
         const res = await fetch(`${API_URL}?action=getBooks`);
         const data = await res.json();
-        appState.books = Array.isArray(data) ? data : [];
+        if (Array.isArray(data)) {
+            appState.books = data;
+            // حفظ نسخة في المتصفح للمرة القادمة
+            localStorage.setItem('db_books', JSON.stringify(data)); 
+            // إذا كان العميل يشاهد صفحة الكتب، نحدثها له فوراً
+            if(appState.currentView === 'gallery') renderGallery(); 
+        }
     } catch (e) { console.error('Error fetching books'); }
 }
 
 async function fetchSettings() {
     try {
         const res = await fetch(`${API_URL}?action=getSettings`);
-        appState.settings = await res.json();
+        const data = await res.json();
+        appState.settings = data;
+        localStorage.setItem('db_settings', JSON.stringify(data)); // حفظ نسخة
         updateSiteBranding();
     } catch (e) { console.error(e); }
 }
@@ -83,7 +126,10 @@ async function fetchSettings() {
 async function fetchSlider() {
     try {
         const res = await fetch(`${API_URL}?action=getSlider`);
-        appState.slider = await res.json();
+        const data = await res.json();
+        appState.slider = data;
+        localStorage.setItem('db_slider', JSON.stringify(data)); // حفظ نسخة
+        if(appState.currentView === 'home') renderStackSlider();
     } catch (e) { console.error(e); }
 }
 
@@ -93,7 +139,6 @@ async function fetchOrdersForTracking() {
         appState.orders = await res.json();
     } catch (e) { console.error('Error fetching orders'); }
 }
-
 // === Branding ===
 function updateSiteBranding() {
     const s = appState.settings;
@@ -387,47 +432,59 @@ function renderApp() {
     if(appState.currentView === 'home') renderStackSlider();
 }
 
+// [index.js] دالة عرض المختارات (محدثة لنظام السلايدر الأفقي)
 function renderFeatured() {
     const container = document.getElementById('featured-books');
     if (!container) return; 
 
-    const featured = [...appState.books].reverse().slice(0, 5);
+    // 1. تصفية الكتب المميزة
+    let featuredBooks = appState.books.filter(b => String(b.featured).toUpperCase().trim() === 'TRUE');
+
+    if (featuredBooks.length === 0) {
+        featuredBooks = [...appState.books].reverse().slice(0, 5);
+    } else {
+        featuredBooks = featuredBooks.reverse();
+    }
     
-    if (featured.length === 0) {
-        container.innerHTML = '<div class="w-full text-center text-gray-500 col-span-5">لا توجد كتب مضافة حديثاً</div>';
+    if (featuredBooks.length === 0) {
+        container.innerHTML = '<div class="w-full text-center text-gray-500 my-10">لا توجد كتب مختارة حالياً</div>';
         return;
     }
 
+    container.innerHTML = featuredBooks.map(book => {
+        const p = calculatePrice(book.price, book.discount);
+        const isOutOfStock = parseInt(book.stock) <= 0;
 
-container.innerHTML = featured.map(book => {
-    const p = calculatePrice(book.price, book.discount);
-    const isOutOfStock = parseInt(book.stock) <= 0;
-
-    // التعديل هنا: استخدام aspect-[2/3] و object-contain
-    return `
-        <div class="min-w-[160px] md:min-w-[200px] w-full glass rounded-2xl overflow-hidden cursor-pointer group relative snap-center transition duration-300 border border-white/5 hover:border-gold/30" onclick="openBookModal('${book.id}')">
-            <div class="w-full aspect-[2/3] overflow-hidden relative bg-[#151515] flex items-center justify-center">
-                <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-contain p-1 group-hover:scale-105 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+        // التغيير هنا في الكلاسات:
+        // 1. snap-center: عشان الكرت يوقف في النص لما تسكرول
+        // 2. shrink-0: عشان الكروت متصغرش وتفعص في بعضها
+        // 3. w-[200px]: عرض ثابت للكرت
+        return `
+            <div class="min-w-[180px] w-[180px] md:min-w-[220px] md:w-[220px] shrink-0 snap-center glass rounded-2xl overflow-hidden cursor-pointer group relative transition duration-300 border border-white/5 hover:border-gold/30 hover:-translate-y-2" onclick="openBookModal('${book.id}')">
                 
-                ${isOutOfStock 
-                    ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20 z-10">نفذت الكمية</span>`
-                    : (p.hasDiscount ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10">-${p.percent}%</span>` : '')
-                }
+                <div class="w-full aspect-[2/3] overflow-hidden relative bg-[#151515] flex items-center justify-center">
+                    <img src="${getImageUrl(book.image_url)}" class="w-full h-full object-contain p-2 group-hover:scale-105 transition duration-500 ${isOutOfStock ? 'grayscale opacity-60' : ''}" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                    
+                    ${isOutOfStock 
+                        ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20 z-10">نفذت الكمية</span>`
+                        : (p.hasDiscount ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10">-${p.percent}%</span>` : '')
+                    }
 
-                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-20">
-                     <i class="fas ${isOutOfStock ? 'fa-ban text-gray-400' : 'fa-eye text-white'} text-3xl drop-shadow-lg"></i>
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-20">
+                         <i class="fas ${isOutOfStock ? 'fa-ban text-gray-400' : 'fa-eye text-white'} text-3xl drop-shadow-lg"></i>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <h4 class="font-bold text-white truncate text-sm mb-1 group-hover:text-gold transition text-right">${book.title}</h4>
+                    <div class="flex items-center gap-2 flex-row-reverse justify-end">
+                        <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-sm">${p.final} ج.م</span>
+                        ${p.hasDiscount && !isOutOfStock ? `<span class="text-gray-500 text-xs line-through">${p.original}</span>` : ''}
+                    </div>
                 </div>
             </div>
-            <div class="p-3">
-                <h4 class="font-bold text-white truncate text-sm mb-1 group-hover:text-gold transition text-right">${book.title}</h4>
-                <div class="flex items-center gap-2 flex-row-reverse justify-end">
-                    <span class="${isOutOfStock ? 'text-gray-500' : 'text-gold'} font-bold text-sm">${p.final} ج.م</span>
-                    ${p.hasDiscount && !isOutOfStock ? `<span class="text-gray-500 text-xs line-through">${p.original}</span>` : ''}
-                </div>
-            </div>
-        </div>
-    `;
-}).join('');
+        `;
+    }).join('');
 }
 
 

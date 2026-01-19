@@ -8,10 +8,11 @@ const SCRIPT_PROP = PropertiesService.getScriptProperties();
 // ==========================================
 // 1. معالجة طلبات القراءة (GET)
 // ==========================================
-function doGet(e) {
-  const lock = LockService.getScriptLock();
-  lock.tryLock(10000); 
+// [Code.gs] استبدل دالة doGet بالكامل بهذه النسخة السريعة 👇
 
+function doGet(e) {
+
+  
   let result = {};
   
   try {
@@ -41,7 +42,7 @@ function doGet(e) {
          result = getData(db.slider);
          break;
          
-      case 'getCoupons': // خاص بلوحة التحكم
+      case 'getCoupons':
          result = getData(db.coupons);
          break;
 
@@ -55,10 +56,8 @@ function doGet(e) {
 
   } catch (err) {
     result = { error: err.toString(), stack: err.stack };
-  } finally {
-    lock.releaseLock();
   }
-
+  
   return sendJSON(result);
 }
 
