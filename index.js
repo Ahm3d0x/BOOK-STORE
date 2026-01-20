@@ -42,55 +42,101 @@ const SHIPPING_RATES = {
     "شمال سيناء": 70,
     "جنوب سيناء": 80
 };
-// [index.js] تحديث دالة البدء لتشغيل الروابط المباشرة فوراً من الكاش
 
+// [index.js] دالة التحميل الرئيسية
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('current-year').textContent = new Date().getFullYear();
     
-    // 1. التحميل الفوري من الكاش
+    // 1. التحميل من الكاش
     loadFromCache();
     
-    // إذا وجدنا بيانات في الكاش، نرسم الموقع فوراً
     if (appState.books.length > 0) {
         renderApp();
-        // ✅ التعديل هنا: فحص الرابط وفتح الكتاب فوراً باستخدام بيانات الكاش
-        checkAndOpenBookFromUrl();
+        // 👈 الاستدعاء الأول: (false) يعني نحن ما زلنا نعتمد على الكاش
+        // إذا لم يجد الطلب، سيعرض اللودينج بدلاً من الخطأ
+        checkUrlParameters(false); 
     } else {
         showToast('جاري الاتصال بالمكتبة...', 'info');
     }
     
-    // 2. جلب البيانات الحديثة في الخلفية
+    // 2. جلب البيانات الحديثة من السيرفر
     await Promise.all([fetchBooks(), fetchSettings(), fetchSlider(), fetchOrdersForTracking()]);
     
     populateFilters();
     setupFilterListeners();
     loadCartFromStorage();
     
-    // إعادة الرسم بالبيانات الجديدة (تحديث صامت)
+    // إعادة الرسم بالبيانات الجديدة
     renderApp();
     
-    // ✅ فحص الرابط مرة أخرى (لضمان فتح الكتاب لو لم يكن موجوداً في الكاش سابقاً)
-    checkAndOpenBookFromUrl();
+    // 👈 الاستدعاء الثاني: (true) يعني السيرفر وصل
+    // سيقوم الآن بعرض الطلب فوراً (أو رسالة خطأ حقيقية لو الرقم غلط)
+    checkUrlParameters(true); 
 });
-
-// دالة مساعدة جديدة لفتح الكتاب من الرابط (عشان نستخدمها مرتين بدون تكرار الكود)
-function checkAndOpenBookFromUrl() {
+// [index.js] دالة فحص الرابط المحدثة (تدعم التحميل للكتب والطلبات)
+function checkUrlParameters(isServerLoaded = false) {
     const urlParams = new URLSearchParams(window.location.search);
-    const bookId = urlParams.get('bookId');
     
-    // نفتح المودال فقط إذا كان هناك ID والنافذة ليست مفتوحة بالفعل
-    if (bookId) {
-        // التأكد من أننا في صفحة المكتبة
-        if(appState.currentView !== 'gallery') router('gallery');
+    // ===========================
+    // 1. معالجة تتبع الطلب (OrderId)
+    // ===========================
+    const orderId = urlParams.get('orderId');
+    if (orderId) {
+        router('tracking');
+        const input = document.querySelector('#tracking-form input[name="orderId"]');
+        if(input) input.value = orderId;
         
-        // فتح المودال (setTimeout صغير لضمان أن العناصر تم رسمها)
-        setTimeout(() => {
-            // نتحقق إن الكتاب موجود فعلاً قبل فتح النافذة
-            const bookExists = appState.books.find(b => b.id == bookId);
-            if(bookExists) {
-                openBookModal(bookId);
+        const orderExists = appState.orders.find(o => String(o.order_id).toUpperCase() === String(orderId).toUpperCase());
+
+        if (orderExists) {
+            trackOrder(orderId);
+            setTimeout(() => {
+                const resultDiv = document.getElementById('tracking-result');
+                if(resultDiv) resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        } else {
+            const resultDiv = document.getElementById('tracking-result');
+            if (!isServerLoaded) {
+                // ⏳ وضع الانتظار للطلب
+                if(resultDiv) {
+                    resultDiv.classList.remove('hidden');
+                    resultDiv.innerHTML = `
+                        <div class="text-center py-12 glass rounded-2xl border border-gold/10">
+                            <div class="loader mx-auto mb-4"></div>
+                            <h3 class="text-gold font-bold text-lg mb-2">جاري البحث عن الطلب...</h3>
+                        </div>`;
+                    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                trackOrder(orderId); // سيعرض رسالة الخطأ لأن الطلب غير موجود
             }
-        }, 100);
+        }
+    }
+
+    // ===========================
+    // 2. معالجة فتح الكتاب (BookId)
+    // ===========================
+    const bookId = urlParams.get('bookId');
+    if (bookId) {
+        const bookExists = appState.books.find(b => b.id == bookId);
+        
+        if (bookExists) {
+            // ✅ الكتاب موجود: نخفي اللودينج ونفتح الكتاب
+            removeLoadingModal();
+            if(appState.currentView !== 'gallery') router('gallery');
+            setTimeout(() => openBookModal(bookId), 100);
+        } else {
+            if (!isServerLoaded) {
+                // ⏳ الكتاب غير موجود في الكاش + ننتظر السيرفر: نعرض اللودينج
+                showLoadingModal('جاري تحضير الكتاب');
+            } else {
+                // ❌ السيرفر وصل والكتاب غير موجود: خطأ
+                removeLoadingModal();
+                showToast('عذراً، هذا الكتاب غير متاح أو تم حذفه', 'error');
+                // تنظيف الرابط عشان المستخدم ميفضلش واقف عليه
+                window.history.pushState({path: window.location.pathname}, '', window.location.pathname);
+            }
+        }
     }
 }
 // دالة جديدة لقراءة البيانات المخزنة في المتصفح
@@ -1615,4 +1661,30 @@ function copyCoupon(code) {
     }).catch(() => {
         showToast('فشل النسخ', 'error');
     });
+}
+// [index.js] دوال مساعدة لشاشة التحميل المؤقتة
+function showLoadingModal(msg) {
+    // لو المودال موجود بالفعل لا نكرره
+    if(document.getElementById('custom-loading-modal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'custom-loading-modal';
+    modal.className = 'fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in';
+    modal.innerHTML = `
+        <div class="glass p-8 rounded-2xl flex flex-col items-center justify-center border border-gold/20 shadow-2xl min-w-[250px]">
+            <div class="loader mb-6 w-12 h-12 border-4"></div>
+            <h3 class="text-gold font-bold text-xl animate-pulse">${msg}</h3>
+            <p class="text-gray-400 text-xs mt-2">لحظات وسيظهر المحتوى...</p>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function removeLoadingModal() {
+    const modal = document.getElementById('custom-loading-modal');
+    if(modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.3s';
+        setTimeout(() => modal.remove(), 300);
+    }
 }
