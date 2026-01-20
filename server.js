@@ -373,7 +373,15 @@ function getData(sheet) {
 
 function addRowDynamic(sheet, dataObj) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const newRow = headers.map(header => (dataObj[header] !== undefined && dataObj[header] !== null) ? dataObj[header] : '');
+  const newRow = headers.map(header => {
+    let val = (dataObj[header] !== undefined && dataObj[header] !== null) ? dataObj[header] : '';
+    
+    // ✅ الحل السحري: إذا القيمة تبدأ بـ 0 وهي أرقام فقط، نضع قبلها ' للحفاظ عليها
+    if (String(val).startsWith('0') && String(val).length > 1 && !isNaN(val)) {
+       return "'" + val;
+    }
+    return val;
+  });
   sheet.appendRow(newRow);
 }
 
@@ -385,7 +393,16 @@ function updateRowDynamic(sheet, idColName, idValue, dataObj) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idIdx]) === String(idValue)) {
       headers.forEach((header, colIdx) => {
-        if (dataObj.hasOwnProperty(header)) sheet.getRange(i + 1, colIdx + 1).setValue(dataObj[header]);
+        if (dataObj.hasOwnProperty(header)) {
+            let val = dataObj[header];
+            
+            // ✅ الحل السحري للتحديث أيضاً: إضافة ' للأرقام التي تبدأ بصفر
+            if (String(val).startsWith('0') && String(val).length > 1 && !isNaN(val)) {
+               val = "'" + val;
+            }
+            
+            sheet.getRange(i + 1, colIdx + 1).setValue(val);
+        }
       });
       return;
     }
