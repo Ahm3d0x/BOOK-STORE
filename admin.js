@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbwXtdAHs8jX_Jf_79W37VQtvfHx0hOQVq_Hra4gJiUGmYZqvfdECIQTbL41Is9DpOUV/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyDXRE_Kb2f2RJD7pAx8nErSNMfZnQQL8BST1bR6hAFlPF6KDK0zZUQcOKXEM4I-k4D/exec';
 
 
 // === Global Variables ===

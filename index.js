@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbwXtdAHs8jX_Jf_79W37VQtvfHx0hOQVq_Hra4gJiUGmYZqvfdECIQTbL41Is9DpOUV/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyDXRE_Kb2f2RJD7pAx8nErSNMfZnQQL8BST1bR6hAFlPF6KDK0zZUQcOKXEM4I-k4D/exec';
 let appState = {
     books: [],
     settings: {},
@@ -149,60 +149,89 @@ async function fetchOrdersForTracking() {
         appState.orders = await res.json();
     } catch (e) { console.error('Error fetching orders'); }
 }
-// === Branding ===
+
+// [index.js] استبدل دالة updateSiteBranding القديمة بهذه الدالة بالكامل
+
 function updateSiteBranding() {
     const s = appState.settings;
-    
-    // تحديث اسم الموقع
+    if (!s) return;
+
+    // 1. تحديث اسم الموقع
     if(s.site_name) {
         document.title = s.site_name;
         document.querySelectorAll('.site-name-display').forEach(el => el.textContent = s.site_name);
     }
 
- // داخل دالة updateSiteBranding
+    // 2. تحديث اللوجو (المتصفح + الناف بار + صفحة من نحن)
+    if(s.site_logo) {
+        const logoUrl = getImageUrl(s.site_logo);
+        
+        // أ) أيقونة المتصفح (Favicon)
+        const favicon = document.getElementById('favicon-icon');
+        if (favicon) favicon.href = logoUrl;
 
-if(s.site_logo) {
-    const logoUrl = getImageUrl(s.site_logo); 
+        // ب) لوجو صفحة من نحن
+        const aboutImg = document.getElementById('about-logo-img');
+        const aboutIcon = document.getElementById('about-logo-icon');
+        if(aboutImg && aboutIcon) { 
+            aboutImg.src = logoUrl; 
+            aboutImg.classList.remove('hidden'); 
+            aboutIcon.classList.add('hidden'); 
+        }
 
-    // 1. تحديث أيقونة المتصفح (Favicon) - الكود الجديد
-    const favicon = document.getElementById('favicon-icon');
-    if (favicon) {
-        favicon.href = logoUrl;
+        // ج) لوجو الناف بار (القائمة العلوية)
+        const navImg = document.getElementById('nav-logo-img');
+        const navIcon = document.getElementById('nav-logo-icon');
+        if(navImg && navIcon) {
+            navImg.src = logoUrl;
+            navImg.classList.remove('hidden');
+            navIcon.classList.add('hidden');
+        }
     }
 
-    // 2. تحديث لوجو صفحة من نحن
-    const aboutImg = document.getElementById('about-logo-img');
-    const aboutIcon = document.getElementById('about-logo-icon');
-    if(aboutImg && aboutIcon) { 
-        aboutImg.src = logoUrl; 
-        aboutImg.classList.remove('hidden'); 
-        aboutIcon.classList.add('hidden'); 
+    if(s.about_text) {
+        const aboutEl = document.getElementById('about-text');
+        if(aboutEl) aboutEl.innerHTML = s.about_text.replace(/\n/g, '<br>');
     }
-
-    // 3. تحديث لوجو الناف بار
-    const navImg = document.getElementById('nav-logo-img');
-    const navIcon = document.getElementById('nav-logo-icon');
-    if(navImg && navIcon) {
-        navImg.src = logoUrl;
-        navImg.classList.remove('hidden');
-        navIcon.classList.add('hidden');
+    if(s.privacy_policy) {
+        const privEl = document.getElementById('privacy-text');
+        if(privEl) privEl.textContent = s.privacy_policy;
     }
-}
-
-    // باقي الكود كما هو...
-    if(s.about_text) document.getElementById('about-text').innerHTML = s.about_text.replace(/\n/g, '<br>');
-    if(s.privacy_policy) document.getElementById('privacy-text').textContent = s.privacy_policy;
     
     const socialDiv = document.getElementById('social-links');
     if(socialDiv) {
         socialDiv.innerHTML = '';
-        const map = { facebook: {icon: 'fa-facebook', color: 'text-blue-500'}, instagram: {icon: 'fa-instagram', color: 'text-pink-500'}, whatsapp: {icon: 'fa-whatsapp', color: 'text-green-500'} };
+        
+        const map = { 
+            facebook: {icon: 'fa-facebook', color: 'text-blue-500'}, 
+            instagram: {icon: 'fa-instagram', color: 'text-pink-500'}, 
+            whatsapp: {icon: 'fa-whatsapp', color: 'text-green-500'} 
+        };
+
         for(const [k, v] of Object.entries(s)) {
-            if(map[k] && v) socialDiv.innerHTML += `<a href="${v}" target="_blank" class="${map[k].color} hover:scale-125 transition"><i class="fab ${map[k].icon}"></i></a>`;
+            if(map[k] && v) {
+                let finalLink = v;
+
+                if (k === 'whatsapp') {
+                    let cleanNum = String(v).replace(/[^0-9]/g, '');
+                    if (cleanNum.startsWith('0')) {
+                        cleanNum = '2' + cleanNum.substring(1); 
+                    } else if (cleanNum.startsWith('1')) {
+                        cleanNum = '20' + cleanNum;
+                    }
+                    finalLink = `https://wa.me/${cleanNum}`;
+                }
+
+                socialDiv.innerHTML += `<a href="${finalLink}" target="_blank" class="${map[k].color} hover:scale-125 transition"><i class="fab ${map[k].icon}"></i></a>`;
+            }
         }
     }
-    generateDynamicManifest();
+
+    // 5. استدعاء الدوال المساعدة الإضافية
+    if (typeof generateDynamicManifest === 'function') generateDynamicManifest();
+    if (typeof updateContactLinks === 'function') updateContactLinks();
 }
+
 // [index.js] تحديث دالة المانيفست لإصلاح خطأ start_url
 function generateDynamicManifest() {
     const s = appState.settings;
@@ -251,7 +280,37 @@ function generateDynamicManifest() {
     
     link.href = manifestURL;
 }
+function updateContactLinks() {
+    const s = appState.settings;
+    if (!s) return;
 
+    // إصلاح رابط الواتساب
+    const whatsappBtn = document.getElementById('whatsapp-link-btn'); // تأكد من أن الزر في html له هذا الـ id أو class
+    // أو سنبحث عن جميع الروابط التي تحتوي على أيقونة الواتساب
+    const allLinks = document.querySelectorAll('a');
+    
+    allLinks.forEach(link => {
+        // إذا كان الرابط هو رقم التليفون فقط أو يحتوي على أيقونة واتساب
+        if (link.innerHTML.includes('fa-whatsapp') || (s.whatsapp && link.href.includes(s.whatsapp))) {
+            if (s.whatsapp) {
+                // تنظيف الرقم من المسافات والحروف
+                let cleanNumber = String(s.whatsapp).replace(/[^0-9]/g, '');
+                // إضافة كود الدولة (مصر) إذا كان يبدأ بصفر
+                if (cleanNumber.startsWith('0')) {
+                    cleanNumber = '2' + cleanNumber;
+                }
+                link.href = `https://wa.me/${cleanNumber}`;
+                link.target = "_blank";
+            }
+        }
+        
+        // إصلاح رابط الفيسبوك بالمثل
+        if (link.innerHTML.includes('fa-facebook') && s.facebook) {
+            link.href = s.facebook;
+            link.target = "_blank";
+        }
+    });
+}
 // === Filter Logic ===
 function populateFilters() {
     const books = appState.books;
