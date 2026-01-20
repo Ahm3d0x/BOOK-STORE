@@ -471,15 +471,19 @@ function formatDateForSheet(dateStr) {
    return d.toLocaleDateString('en-GB'); // DD/MM/YYYY
 }
 
-
+// ==========================================
+// 4. نظام الإيميلات الاحترافي (High-End Design)
+// ==========================================
 function sendEmails(order, settingsSheet) {
+    // 1. جلب إعدادات الموقع
     let siteName = 'Book.com';
     let adminEmail = '';
     let siteLogoRaw = '';
     let whatsapp = '';
     let facebook = '';
+    let instagram = '';
     let contactEmail = '';
-    let siteUrl = '#'; // الرابط الافتراضي للموقع
+    let siteUrl = '#'; // الرابط الافتراضي
 
     try {
         const settings = getData(settingsSheet);
@@ -488,96 +492,189 @@ function sendEmails(order, settingsSheet) {
             if(s.key === 'site_logo') siteLogoRaw = s.value;
             if(s.key === 'whatsapp') whatsapp = s.value;
             if(s.key === 'facebook') facebook = s.value;
+            if(s.key === 'instagram') instagram = s.value;
             if(s.key === 'contact_email') contactEmail = s.value;
-            if(s.key === 'site_url') siteUrl = s.value; // ✅ جلب رابط الموقع
+            if(s.key === 'site_url') siteUrl = s.value;
         });
         adminEmail = settingsSheet.getRange(4, 2).getValue();
     } catch(e) {
         Logger.log("Error fetching settings: " + e);
     }
 
-    // معالجة اللوجو وجعله يفتح الموقع عند الضغط عليه
+    // 2. معالجة الروابط والصور
     const logoUrl = getEmailImageUrl(siteLogoRaw);
-    const logoHtml = logoUrl 
-        ? `<a href="${siteUrl}" target="_blank"><img src="${logoUrl}" alt="${siteName}" style="max-height: 80px; display: block; margin: 0 auto 10px auto; border-radius: 8px; border: 0;"></a>` 
-        : `<div style="text-align: center;"><a href="${siteUrl}" style="font-size: 24px; font-weight: bold; color: #FFD700; text-decoration: none;">${siteName}</a></div>`;
-
-    // ✅ إصلاح رابط الواتساب (إضافة https://wa.me/ وحذف أي مسافات)
-    // إذا كان الرقم يبدأ بـ 0، نحذفه ونضيف كود الدولة (اختياري، هنا نستخدم الرقم كما هو مع wa.me)
-    let whatsappLink = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}` : '#';
-    if(whatsapp && whatsapp.startsWith('0')) {
-       // يفضل دائماً إضافة كود الدولة 20 لمصر، هذا السطر يحول 010 لـ 2010
-       whatsappLink = `https://wa.me/2${whatsapp}`; 
+    
+    // إصلاح رابط الواتساب
+    let waLink = '#';
+    if(whatsapp) {
+        let cleanNum = String(whatsapp).replace(/[^0-9]/g, '');
+        if(cleanNum.startsWith('0')) cleanNum = '2' + cleanNum;
+        waLink = `https://wa.me/${cleanNum}`;
     }
 
+    // 3. معالجة قائمة المنتجات (تحويل النص إلى أسطر HTML)
+    let itemsHtml = '';
+    if (order.items) {
+        const itemsList = order.items.split(' | ');
+        itemsList.forEach(item => {
+            itemsHtml += `
+            <tr>
+                <td style="padding: 10px 0; border-bottom: 1px solid #333; color: #e0e0e0; font-size: 14px;">
+                    🛒 ${item}
+                </td>
+            </tr>`;
+        });
+    }
+
+    // 4. معالجة سطر الخصم
     let discountRow = '';
     if (Number(order.discount_amount) > 0) {
         discountRow = `
-        <tr style="background-color: #e8f5e9;">
-            <td style="padding: 12px; border-bottom: 1px solid #eee; color: #2e7d32;">
-                <strong>قيمة الخصم</strong> <span style="font-size: 11px; background: #c8e6c9; padding: 2px 6px; border-radius: 4px; margin-right: 5px;">${order.coupon_code}</span>
-            </td>
-            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-weight: bold; color: #2e7d32;">-${order.discount_amount} ج.م</td>
+        <tr>
+            <td style="padding: 8px 0; color: #4ade80; font-size: 14px;">قسيمة خصم <span style="background:rgba(74, 222, 128, 0.1); padding:2px 6px; border-radius:4px; font-size:11px;">${order.coupon_code}</span></td>
+            <td style="padding: 8px 0; color: #4ade80; text-align: left; font-weight: bold;">-${order.discount_amount} ج.م</td>
         </tr>`;
     }
 
-    const contactSection = `
-    <div style="margin-top: 30px; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px dashed #ccc; text-align: right;">
-        <h3 style="margin: 0 0 15px 0; color: #333; font-size: 16px; border-bottom: 2px solid #FFD700; display: inline-block; padding-bottom: 5px;">📞 خدمة العملاء</h3>
-        <p style="margin: 5px 0; color: #666; font-size: 13px;">لأي استفسار بخصوص طلبك، يمكنك التواصل معنا عبر:</p>
-        
-        <ul style="list-style: none; padding: 0; margin: 10px 0;">
-            ${whatsapp ? `<li style="margin-bottom: 8px;"><strong>📱 واتساب:</strong> <a href="${whatsappLink}" target="_blank" style="color: #25D366; text-decoration: none; font-weight:bold;">اضغط للمحادثة (${whatsapp})</a></li>` : ''}
-            ${contactEmail ? `<li style="margin-bottom: 8px;"><strong>📧 البريد:</strong> ${contactEmail}</li>` : ''}
-            ${facebook ? `<li style="margin-bottom: 8px;"><strong>🌐 فيسبوك:</strong> <a href="${facebook}" target="_blank" style="color: #007bff; text-decoration: none;">زيارة صفحتنا</a></li>` : ''}
-        </ul>
-    </div>
-    `;
+    // 5. روابط السوشيال ميديا
+    let socialIcons = '';
+    if(facebook) socialIcons += `<a href="${facebook}" style="text-decoration:none; margin:0 5px;"><img src="https://cdn-icons-png.flaticon.com/32/145/145802.png" width="24" style="filter: invert(1);"></a>`;
+    if(instagram) socialIcons += `<a href="${instagram}" style="text-decoration:none; margin:0 5px;"><img src="https://cdn-icons-png.flaticon.com/32/3955/3955024.png" width="24" style="filter: invert(1);"></a>`;
+    if(whatsapp) socialIcons += `<a href="${waLink}" style="text-decoration:none; margin:0 5px;"><img src="https://cdn-icons-png.flaticon.com/32/3670/3670051.png" width="24" style="filter: invert(1);"></a>`;
 
-    // ... (باقي كود htmlTemplate كما هو، لا تغيير فيه) ...
-    // فقط تأكد من استخدام المتغيرات الجديدة logoHtml و contactSection التي عرفناها فوق
-    
-    // (للاختصار، سأكتب فقط الجزء المعدل للقالب، انسخ القالب القديم وضعه هنا)
+
+    // ==========================================
+    // 🎨 تصميم القالب (HTML Email Template)
+    // ==========================================
     const htmlTemplate = (isForAdmin) => `
-      <!DOCTYPE html>
-      <html lang="ar" dir="rtl">
-      <head>
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
         <meta charset="UTF-8">
-        <style>body { font-family: sans-serif; background: #1a1a1a; margin:0; padding:0; } .container { background: #fff; max-width: 600px; margin: 20px auto; border-radius: 10px; overflow:hidden; }</style>
-      </head>
-      <body>
-         <div class="container">
-             <div style="background: #000; padding: 20px; text-align: center; border-bottom: 4px solid #FFD700;">
-                 ${logoHtml} <h1 style="color: #FFD700; margin: 10px 0;">${siteName}</h1>
-                 <p style="color: #fff; opacity: 0.8; font-size: 12px;">تأكيد الطلب #${order.order_id}</p>
-             </div>
-             <div style="padding: 20px;">
-                 <p>مرحباً <strong>${order.customer_name}</strong>،</p>
-                 <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                    <tr style="background: #f8f8f8;"><th style="padding: 10px; text-align: right;">البيان</th><th style="padding: 10px; text-align: left;">القيمة</th></tr>
-                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">الكتب</td><td style="text-align: left;">${order.books_price}</td></tr>
-                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">الشحن</td><td style="text-align: left;">${order.shipping_cost}</td></tr>
-                    ${discountRow}
-                    <tr><td style="padding: 10px; font-weight: bold;">الإجمالي</td><td style="text-align: left; font-weight: bold; color: #FFD700;">${order.total_price}</td></tr>
-                 </table>
-                 ${!isForAdmin ? contactSection : ''} </div>
-             <div style="background: #111; color: #888; padding: 20px; text-align: center; font-size: 12px;">
-                <a href="${siteUrl}" style="color: #FFD700; text-decoration: none;">زيارة الموقع</a>
-             </div>
-         </div>
-      </body>
-      </html>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+            body { margin: 0; padding: 0; background-color: #121212; font-family: 'Cairo', sans-serif; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #1e1e1e; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+            .header { background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 40px 20px; text-align: center; border-bottom: 3px solid #FFD700; }
+            .content { padding: 30px 20px; color: #ffffff; }
+            .info-box { background-color: #252525; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; }
+            .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .price-table td { padding: 8px 0; color: #b0b0b0; }
+            .total-row td { border-top: 1px solid #444; padding-top: 15px; color: #FFD700; font-size: 18px; font-weight: bold; }
+            .btn { display: inline-block; background-color: #FFD700; color: #000000; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+            .footer { background-color: #000000; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #333; }
+            a { color: #FFD700; text-decoration: none; }
+        </style>
+    </head>
+    <body style="background-color: #121212; margin: 0; padding: 20px;">
+        
+        <div class="container">
+            <div class="header">
+                <a href="${siteUrl}" target="_blank">
+                    ${logoUrl ? `<img src="${logoUrl}" alt="${siteName}" width="100" style="border-radius: 12px; margin-bottom: 15px;">` : ''}
+                </a>
+                <h1 style="margin: 0; color: #ffffff; font-size: 24px;">${siteName}</h1>
+                <p style="margin: 5px 0 0; color: #FFD700; font-size: 14px;">
+                    ${isForAdmin ? '🔔 إشعار طلب جديد' : '🎉 تم استلام طلبك بنجاح'}
+                </p>
+            </div>
+
+            <div class="content">
+                <p style="text-align: center; font-size: 16px; margin-bottom: 30px;">
+                    مرحباً <strong>${order.customer_name}</strong>،<br>
+                    ${isForAdmin ? 'قام هذا العميل بإتمام طلب جديد، التفاصيل أدناه:' : 'شكراً لثقتك بنا! هذه تفاصيل طلبك، سنقوم بمراجعته والبدء في تجهيزه فوراً.'}
+                </p>
+
+                <div class="info-box">
+                    <table width="100%">
+                        <tr>
+                            <td style="color: #888; font-size: 12px;">رقم الطلب</td>
+                            <td style="color: #888; font-size: 12px; text-align: left;">التاريخ</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #fff; font-size: 16px; font-weight: bold; font-family: monospace;">#${order.order_id}</td>
+                            <td style="color: #fff; font-size: 14px; text-align: left;">${order.date ? order.date.split(',')[0] : ''}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3 style="margin: 0 0 15px; color: #FFD700; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 10px;">📦 المنتجات المطلوبة</h3>
+                    <table width="100%" cellspacing="0">
+                        ${itemsHtml}
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3 style="margin: 0 0 15px; color: #FFD700; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 10px;">💰 ملخص الدفع</h3>
+                    <table class="price-table">
+                        <tr>
+                            <td>مجموع الكتب</td>
+                            <td style="text-align: left;">${order.books_price} ج.م</td>
+                        </tr>
+                        <tr>
+                            <td>مصاريف الشحن <small style="color:#666;">(${order.governorate})</small></td>
+                            <td style="text-align: left;">${order.shipping_cost} ج.م</td>
+                        </tr>
+                        ${discountRow}
+                        <tr class="total-row">
+                            <td>الإجمالي النهائي</td>
+                            <td style="text-align: left;">${order.total_price} ج.م</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3 style="margin: 0 0 15px; color: #FFD700; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 10px;">📍 عنوان التوصيل</h3>
+                    <p style="margin: 5px 0; color: #e0e0e0; font-size: 14px;"><strong>العنوان:</strong> ${order.address}</p>
+                    <p style="margin: 5px 0; color: #e0e0e0; font-size: 14px;"><strong>الهاتف:</strong> ${order.phone}</p>
+                    ${order.notes ? `<p style="margin: 5px 0; color: #aaa; font-size: 13px;"><strong>ملاحظات:</strong> ${order.notes}</p>` : ''}
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${siteUrl}?orderId=${order.order_id}" class="btn" style="color:#000 !important;">
+                        ${isForAdmin ? 'عرض في لوحة التحكم' : 'تتبع حالة الطلب'}
+                    </a>
+                </div>
+
+                ${!isForAdmin ? `
+                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px dashed #333;">
+                    <p style="color: #888; font-size: 13px; margin-bottom: 10px;">تحتاج مساعدة؟ تواصل معنا</p>
+                    <div>${socialIcons}</div>
+                </div>
+                ` : ''}
+            </div>
+
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} ${siteName}. جميع الحقوق محفوظة.</p>
+                <p style="opacity: 0.5; margin-top: 10px;">
+                    Developed by <a href="https://ahmed-attia-portfolio-git-main-ahm3d0xs-projects.vercel.app/" target="_blank" style="color: #888; text-decoration: underline;">Ahmed M Attia</a>
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
     `;
 
-    // إرسال الإيميلات (نفس الكود القديم)
+    // 6. إرسال الإيميلات
     if(order.email && order.email.includes('@')) {
-        MailApp.sendEmail({ to: order.email, subject: `✅ تم استلام طلبك ${order.order_id}`, htmlBody: htmlTemplate(false) });
+        MailApp.sendEmail({ 
+            to: order.email, 
+            subject: `✅ تم استلام طلبك ${order.order_id} - ${siteName}`, 
+            htmlBody: htmlTemplate(false) 
+        });
     }
+
     if(adminEmail && adminEmail.includes('@')) {
-        MailApp.sendEmail({ to: adminEmail, subject: `🔔 طلب جديد: ${order.order_id}`, htmlBody: htmlTemplate(true) });
+        MailApp.sendEmail({ 
+            to: adminEmail, 
+            subject: `🔔 طلب جديد: ${order.order_id} (${order.total_price} ج.م)`, 
+            htmlBody: htmlTemplate(true) 
+        });
     }
 }
-// دالة مساعدة
+
+// دالة مساعدة لضبط روابط الصور
 function getEmailImageUrl(url) {
     if (!url) return '';
     let id = '';
@@ -590,7 +687,6 @@ function getEmailImageUrl(url) {
     if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
     return url;
 }
-
 function authorizeEmail() {
   MailApp.getRemainingDailyQuota();
   console.log("تمت الموافقة بنجاح!");

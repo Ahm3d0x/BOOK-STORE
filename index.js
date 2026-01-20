@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbyDXRE_Kb2f2RJD7pAx8nErSNMfZnQQL8BST1bR6hAFlPF6KDK0zZUQcOKXEM4I-k4D/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzfOXr12LT0cDOyvHntR3cPBTVFXVaOMnamUBsU0bdOHtGFJFue6LsPDav1r0_tGO8/exec';
 let appState = {
     books: [],
     settings: {},
@@ -341,73 +341,55 @@ function setupFilterListeners() {
         if(el) el.addEventListener('input', renderGallery);
     });
 }
+// [index.js] دوال التحكم اليدوي الجديدة
 
-// === Stack Slider Logic (Auto Play Added) ===
-function renderStackSlider() {
-    const container = document.getElementById('hero-slider-container');
-    if (!container) return;
-
+function changeSlide(direction) {
     const activeSlides = appState.slider.filter(s => String(s.active).toLowerCase() === 'true');
-    
-    if(!activeSlides.length) {
-        container.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500 glass rounded-2xl">لا توجد عروض حالياً</div>`;
-        return;
+    const total = activeSlides.length;
+    if (total <= 1) return;
+
+    stopAutoSlide(); // إيقاف المؤقت لحظياً عند التفاعل اليدوي
+
+    const activeEl = document.getElementById(`slide-${appState.currentSlideIndex}`);
+
+    if (direction === 'next') {
+        // أنيميشن الخروج لليسار
+        if(activeEl) {
+            activeEl.style.transition = 'all 0.4s ease-out';
+            activeEl.style.transform = `translateX(-100%) rotate(-10deg) opacity(0)`;
+        }
+        setTimeout(() => {
+            appState.currentSlideIndex = (appState.currentSlideIndex + 1) % total;
+            updateStackVisuals(total);
+            updateIndicators();
+        }, 200);
+    } else {
+        // الرجوع للسابق (بدون أنيميشن معقد لسرعة الاستجابة)
+        appState.currentSlideIndex = (appState.currentSlideIndex - 1 + total) % total;
+        updateStackVisuals(total);
+        updateIndicators();
+        
+        // أنيميشن دخول بسيط
+        const newActive = document.getElementById(`slide-${appState.currentSlideIndex}`);
+        if(newActive) {
+            newActive.style.transform = `translateX(-50px) scale(0.9)`;
+            setTimeout(() => {
+                newActive.style.transform = `translateX(0) scale(1)`;
+            }, 50);
+        }
     }
-
-
-container.innerHTML = activeSlides.map((slide, index) => {
-    // التحقق من وجود كوبون
-    const hasCoupon = slide.coupon_code && slide.coupon_code.trim() !== '';
     
-    return `
-        <div class="card-stack-item glass rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing border border-white/10" id="slide-${index}" 
-             style="z-index: ${activeSlides.length - index};">
-            
-            <img src="${getImageUrl(slide.image_url)}" class="w-full h-full object-cover mix-blend-overlay" onerror="this.src='https://placehold.co/800x400?text=Offer'">
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-            
-            <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 flex flex-col items-start">
-                
-                <div class="flex gap-2 mb-4">
-                    <span class="bg-gold text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider">مميز</span>
-                    
-                    ${hasCoupon ? `
-                    <div class="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-1 pr-3 py-0.5 gap-2 cursor-pointer hover:bg-white/20 transition group" onclick="copyCoupon('${slide.coupon_code}')">
-                        <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">كوبون</span>
-                        <span class="font-mono text-gold font-bold tracking-wider text-xs">${slide.coupon_code}</span>
-                        <i class="far fa-copy text-gray-400 text-xs group-hover:text-white"></i>
-                    </div>` : ''}
-                </div>
-
-                <h2 class="text-4xl md:text-6xl font-black mb-4 leading-tight text-white drop-shadow-2xl">${slide.title}</h2>
-                <p class="text-xl text-gray-200 mb-8 max-w-xl drop-shadow-md leading-relaxed">${slide.subtitle || ''}</p>
-                
-                ${slide.link ? `<a href="${slide.link}" target="_blank" class="inline-block bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gold transition transform hover:-translate-y-1 shadow-xl">تصفح العرض</a>` : ''}
-            </div>
-        </div>
-    `;
-}).join('');
-
-// [أضف هذه الدالة المساعدة في أي مكان في index.js]
-function copyCoupon(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        showToast(`تم نسخ الكوبون: ${code}`, 'success');
-    });
-}
-    
-    // Add Indicators
-    const indContainer = document.getElementById('slider-indicators');
-    if(indContainer) {
-        indContainer.innerHTML = activeSlides.map((_, i) => 
-            `<div class="w-2 h-2 rounded-full transition-all duration-300 ${i===appState.currentSlideIndex ? 'bg-gold w-6' : 'bg-gray-600'}" id="ind-${i}"></div>`
-        ).join('');
-    }
-
-    updateStackVisuals(activeSlides.length);
-    initSwipeGestures(activeSlides.length);
-    startAutoSlide(activeSlides.length); // Start Timer
+    startAutoSlide(total); // إعادة تشغيل المؤقت
 }
 
+function goToSlide(index) {
+    const total = appState.slider.filter(s => String(s.active).toLowerCase() === 'true').length;
+    appState.currentSlideIndex = index;
+    stopAutoSlide();
+    updateStackVisuals(total);
+    updateIndicators();
+    startAutoSlide(total);
+}
 // New: Auto Slide Function
 function startAutoSlide(total) {
     stopAutoSlide(); // Clear existing
@@ -520,27 +502,22 @@ function initSwipeGestures(total) {
 
 function handleSwipeEnd(start, end, total) {
     const diff = end - start;
-    const threshold = 100;
+    const threshold = 40; // 👈 جعلناها 40 بدلاً من 100 لتكون حساسة وسهلة جداً
     const activeEl = document.getElementById(`slide-${appState.currentSlideIndex}`);
 
     if (Math.abs(diff) > threshold) {
-        const direction = diff > 0 ? 1 : -1; // 1 = right (prev), -1 = left (next)
-        if(activeEl) {
-            activeEl.style.transition = 'all 0.3s ease-out';
-            activeEl.style.transform = `translateX(${direction * 500}px) rotate(${direction * 20}deg) opacity(0)`;
+        // إذا السحب لليسار (التالي) أو لليمين (السابق)
+        const direction = diff < 0 ? 'next' : 'prev';
+        
+        if (direction === 'next') {
+             changeSlide('next'); // نستخدم الدالة الجديدة الموحدة
+        } else {
+             changeSlide('prev');
         }
-        setTimeout(() => {
-            // Logic to move next or prev (simplified to always next for stack feeling, or handle prev if needed)
-            // For simple stack, we usually just cycle next
-            appState.currentSlideIndex = (appState.currentSlideIndex + 1) % total;
-            
-            if(activeEl) {
-                activeEl.style.transition = 'none';
-                updateStackVisuals(total);
-                updateIndicators();
-            } else updateStackVisuals(total);
-        }, 200);
-    } else updateStackVisuals(total);
+    } else {
+        // إذا كانت السحبة ضعيفة جداً، أعد العنصر لمكانه
+        updateStackVisuals(total);
+    }
 }
 
 // === Render Functions ===
@@ -550,7 +527,73 @@ function renderApp() {
     renderCart();
     if(appState.currentView === 'home') renderStackSlider();
 }
+// [index.js] دالة السلايدر المفقودة - قم بإضافتها للملف
+function renderStackSlider() {
+    const container = document.getElementById('hero-slider-container');
+    if (!container) return;
 
+    // تصفية الشرائح المفعلة فقط
+    const activeSlides = appState.slider.filter(s => String(s.active).toLowerCase() === 'true');
+    const total = activeSlides.length;
+
+    if(!total) {
+        container.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500 glass rounded-2xl">لا توجد عروض حالياً</div>`;
+        return;
+    }
+
+    // 1. إنشاء كروت السلايدر
+    const slidesHtml = activeSlides.map((slide, index) => {
+        const hasCoupon = slide.coupon_code && slide.coupon_code.trim() !== '';
+        return `
+            <div class="card-stack-item glass rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing border border-white/10" id="slide-${index}" 
+                 style="z-index: ${total - index};">
+                
+                <img src="${getImageUrl(slide.image_url)}" class="w-full h-full object-cover mix-blend-overlay" onerror="this.src='https://placehold.co/800x400?text=Offer'">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-6 md:p-12 flex flex-col items-start pointer-events-auto">
+                    <div class="flex gap-2 mb-4">
+                        <span class="bg-gold text-black px-4 py-1 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider">مميز</span>
+                        ${hasCoupon ? `
+                        <div class="flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-1 pr-3 py-0.5 gap-2 cursor-pointer hover:bg-white/20 transition group" onclick="copyCoupon('${slide.coupon_code}')">
+                            <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">كوبون</span>
+                            <span class="font-mono text-gold font-bold tracking-wider text-xs">${slide.coupon_code}</span>
+                            <i class="far fa-copy text-gray-400 text-xs group-hover:text-white"></i>
+                        </div>` : ''}
+                    </div>
+                    <h2 class="text-2xl md:text-5xl font-black mb-4 leading-tight text-white drop-shadow-2xl">${slide.title}</h2>
+                    <p class="text-sm md:text-lg text-gray-200 mb-8 max-w-xl drop-shadow-md leading-relaxed line-clamp-2">${slide.subtitle || ''}</p>
+                    ${slide.link ? `<a href="${slide.link}" target="_blank" class="inline-block bg-white text-black px-6 py-2 md:px-8 md:py-3 rounded-full font-bold hover:bg-gold transition transform hover:-translate-y-1 shadow-xl text-sm md:text-base">تصفح العرض</a>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // 2. إضافة أزرار التحكم (اليمين واليسار) ✅ تم التنفيذ حسب طلبك
+    const controlsHtml = `
+        <button onclick="changeSlide('next')" class="absolute left-2 md:-left-5 top-1/2 -translate-y-1/2 z-[60] w-10 h-10 md:w-12 md:h-12 bg-black/60 hover:bg-gold hover:text-black text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition shadow-xl group">
+            <i class="fas fa-chevron-left text-lg group-hover:scale-110 transition"></i>
+        </button>
+        <button onclick="changeSlide('prev')" class="absolute right-2 md:-right-5 top-1/2 -translate-y-1/2 z-[60] w-10 h-10 md:w-12 md:h-12 bg-black/60 hover:bg-gold hover:text-black text-white rounded-full flex items-center justify-center backdrop-blur-md border border-white/10 transition shadow-xl group">
+            <i class="fas fa-chevron-right text-lg group-hover:scale-110 transition"></i>
+        </button>
+    `;
+
+    container.innerHTML = slidesHtml + controlsHtml;
+
+    // 3. تحديث المؤشرات (النقاط)
+    const indContainer = document.getElementById('slider-indicators');
+    if(indContainer) {
+        indContainer.innerHTML = activeSlides.map((_, i) => 
+            `<button onclick="goToSlide(${i})" class="w-2 h-2 rounded-full transition-all duration-300 ${i===appState.currentSlideIndex ? 'bg-gold w-8' : 'bg-gray-600 hover:bg-gray-400'}" id="ind-${i}"></button>`
+        ).join('');
+    }
+
+    // تهيئة الوظائف المساعدة
+    updateStackVisuals(total);
+    initSwipeGestures(total);
+    startAutoSlide(total);
+}
 // [index.js] دالة عرض المختارات (محدثة لتنظيف الأرقام بدقة)
 function renderFeatured() {
     const container = document.getElementById('featured-books');
