@@ -1,5 +1,4 @@
-// [service-worker.js] تحديث الإصدار لإجبار المتصفح على جلب الملفات الجديدة
-const CACHE_NAME = 'book-store'; // 👈 غيرنا الرقم هنا من v1 إلى v2
+const CACHE_NAME = 'book-store-v3';
 const ASSETS = [
   './',
   './index.html',

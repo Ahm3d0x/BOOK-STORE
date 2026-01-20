@@ -275,8 +275,10 @@ function renderInventory(books) {
         return;
     }
     tbody.innerHTML = books.map(book => {
-        // التحقق هل الكتاب مميز أم لا
-        const isFeatured = String(book.featured).toUpperCase() === 'TRUE';
+        // تنظيف القيمة: إذا كانت TRUE نحولها لـ 1 (مؤقتاً) أو نتركها كما هي إذا كانت رقماً
+        let orderVal = book.featured;
+        if(orderVal === 'TRUE') orderVal = ''; // لتجبرك على وضع رقم جديد
+        if(orderVal === 'FALSE') orderVal = '';
         
         return `
         <tr class="hover:bg-white/5 transition group border-b border-white/5 last:border-0">
@@ -289,18 +291,18 @@ function renderInventory(books) {
                     </div>
                 </div>
             </td>
-            <td class="p-4"><div class="text-gold font-bold">${book.price} ج.م</div>${book.discount > 0 ? `<div class="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded inline-block">خصم ${book.discount}</div>` : ''}</td>
+            <td class="p-4"><div class="text-gold font-bold">${book.price} ج.م</div></td>
             <td class="p-4"><span class="font-bold ${book.stock > 5 ? 'text-green-400' : 'text-red-400'}">${book.stock}</span></td>
             <td class="p-4">
                 <div class="text-xs text-gray-300 mb-1">${book.category || 'عام'}</div>
-                <span class="text-[10px] bg-gray-700 px-2 py-1 rounded text-gray-400">${book.language || '-'}</span>
             </td>
             
             <td class="p-4 text-center">
-                <button onclick="toggleBookFeatured('${book.id}', ${!isFeatured})" 
-                        class="text-xl transition transform hover:scale-125 ${isFeatured ? 'text-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'text-gray-600 hover:text-gray-400'}">
-                    <i class="${isFeatured ? 'fas' : 'far'} fa-star"></i>
-                </button>
+                <input type="number" 
+                       value="${orderVal}" 
+                       placeholder="-"
+                       class="bg-[#111] border ${orderVal ? 'border-gold text-gold' : 'border-white/10 text-gray-500'} rounded-lg w-16 text-center p-2 focus:border-gold focus:ring-1 focus:ring-gold outline-none transition font-bold"
+                       onchange="updateBookOrder('${book.id}', this.value)">
             </td>
 
             <td class="p-4 text-center">
@@ -311,6 +313,34 @@ function renderInventory(books) {
             </td>
         </tr>
     `}).join('');
+}
+// [admin.js] دالة لحفظ ترتيب الكتاب فوراً عند تغيير الرقم
+async function updateBookOrder(id, orderValue) {
+    // 1. تحديث محلي سريع
+    const bookIndex = allBooksData.findIndex(b => b.id == id);
+    if(bookIndex > -1) {
+        allBooksData[bookIndex].featured = orderValue;
+        // نغير لون الحدود فوراً ليعرف المستخدم أنه تم التغيير
+        const input = document.activeElement;
+        if(input) {
+            input.classList.add('border-green-500', 'text-green-500');
+            if(!orderValue) input.classList.remove('border-gold', 'text-gold');
+        }
+    }
+
+    try {
+        // 2. إرسال للسيرفر
+        await fetch(`${API_URL}?action=updateBook`, {
+            method: 'POST',
+            body: JSON.stringify({
+                id: id,
+                featured: orderValue ? String(orderValue) : 'FALSE' // إذا مسح الرقم نرسل FALSE
+            })
+        });
+        showToast('تم حفظ الترتيب ✅', 'success');
+    } catch(e) {
+        showToast('فشل الحفظ', 'error');
+    }
 }
 
 function filterInventory(term) {

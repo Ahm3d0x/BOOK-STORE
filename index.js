@@ -492,18 +492,31 @@ function renderApp() {
     if(appState.currentView === 'home') renderStackSlider();
 }
 
-// [index.js] دالة عرض المختارات (محدثة لنظام السلايدر الأفقي)
+// [index.js] دالة عرض المختارات (محدثة لتنظيف الأرقام بدقة)
 function renderFeatured() {
     const container = document.getElementById('featured-books');
     if (!container) return; 
 
-    // 1. تصفية الكتب المميزة
-    let featuredBooks = appState.books.filter(b => String(b.featured).toUpperCase().trim() === 'TRUE');
+    // دالة مساعدة لاستخراج الرقم النظيف
+    const getOrder = (val) => {
+        if (!val) return 0;
+        // تحويل القيمة لنص، وحذف أي شيء ليس رقماً (مثل المسافات أو الرموز)
+        const cleanVal = String(val).replace(/[^\d]/g, '');
+        return parseInt(cleanVal) || 0;
+    };
 
+    // 1. تصفية الكتب: نأخذ الكتب التي لها رقم ترتيب أكبر من 0
+    let featuredBooks = appState.books.filter(b => {
+        const order = getOrder(b.featured);
+        return order > 0;
+    });
+
+    // 2. الترتيب التصاعدي (1 يظهر قبل 2)
+    featuredBooks.sort((a, b) => getOrder(a.featured) - getOrder(b.featured));
+
+    // 3. (احتياطي) لو لم نجد أي كتب مرقمة، نعرض آخر 5 كتب
     if (featuredBooks.length === 0) {
         featuredBooks = [...appState.books].reverse().slice(0, 5);
-    } else {
-        featuredBooks = featuredBooks.reverse();
     }
     
     if (featuredBooks.length === 0) {
@@ -511,14 +524,11 @@ function renderFeatured() {
         return;
     }
 
+    // رسم الكروت (نفس الكود السابق)
     container.innerHTML = featuredBooks.map(book => {
         const p = calculatePrice(book.price, book.discount);
         const isOutOfStock = parseInt(book.stock) <= 0;
 
-        // التغيير هنا في الكلاسات:
-        // 1. snap-center: عشان الكرت يوقف في النص لما تسكرول
-        // 2. shrink-0: عشان الكروت متصغرش وتفعص في بعضها
-        // 3. w-[200px]: عرض ثابت للكرت
         return `
             <div class="min-w-[180px] w-[180px] md:min-w-[220px] md:w-[220px] shrink-0 snap-center glass rounded-2xl overflow-hidden cursor-pointer group relative transition duration-300 border border-white/5 hover:border-gold/30 hover:-translate-y-2" onclick="openBookModal('${book.id}')">
                 
@@ -529,10 +539,6 @@ function renderFeatured() {
                         ? `<span class="absolute top-2 left-2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md border border-white/20 z-10">نفذت الكمية</span>`
                         : (p.hasDiscount ? `<span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10">-${p.percent}%</span>` : '')
                     }
-
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-20">
-                         <i class="fas ${isOutOfStock ? 'fa-ban text-gray-400' : 'fa-eye text-white'} text-3xl drop-shadow-lg"></i>
-                    </div>
                 </div>
                 
                 <div class="p-4">
@@ -546,7 +552,6 @@ function renderFeatured() {
         `;
     }).join('');
 }
-
 
 function renderGallery() {
     const grid = document.getElementById('gallery-grid');
