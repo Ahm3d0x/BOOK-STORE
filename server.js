@@ -371,12 +371,22 @@ function getData(sheet) {
   });
 }
 
+
 function addRowDynamic(sheet, dataObj) {
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  // ✅ قائمة الحقول التي يجب أن تعامل كنص دائماً (لمنع حذف الأصفار أو تغيير التنسيق)
+  const textColumns = ['title', 'author', 'publisher', 'description', 'phone', 'code', 'coupon_code', 'items', 'order_id', 'tags'];
+
   const newRow = headers.map(header => {
     let val = (dataObj[header] !== undefined && dataObj[header] !== null) ? dataObj[header] : '';
     
-    // ✅ الحل السحري: إذا القيمة تبدأ بـ 0 وهي أرقام فقط، نضع قبلها ' للحفاظ عليها
+    // شرط 1: إذا كان العمود من ضمن القائمة النصية، نضع قبله ' فوراً
+    if (textColumns.includes(header) && String(val).trim() !== '') {
+        return "'" + val;
+    }
+
+    // شرط 2: حماية إضافية لأي رقم يبدأ بصفر (للحقول الأخرى غير المعرفة)
     if (String(val).startsWith('0') && String(val).length > 1 && !isNaN(val)) {
        return "'" + val;
     }
@@ -389,16 +399,23 @@ function updateRowDynamic(sheet, idColName, idValue, dataObj) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const idIdx = headers.indexOf(idColName);
+  
+
+  const textColumns = ['title', 'author', 'publisher', 'description', 'phone', 'code', 'coupon_code', 'items', 'order_id', 'tags'];
+
   if (idIdx === -1) return;
+  
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idIdx]) === String(idValue)) {
       headers.forEach((header, colIdx) => {
         if (dataObj.hasOwnProperty(header)) {
             let val = dataObj[header];
             
-            // ✅ الحل السحري للتحديث أيضاً: إضافة ' للأرقام التي تبدأ بصفر
-            if (String(val).startsWith('0') && String(val).length > 1 && !isNaN(val)) {
-               val = "'" + val;
+            // تطبيق نفس الحماية عند التحديث
+            if (textColumns.includes(header) && String(val).trim() !== '') {
+                val = "'" + val;
+            } else if (String(val).startsWith('0') && String(val).length > 1 && !isNaN(val)) {
+                val = "'" + val;
             }
             
             sheet.getRange(i + 1, colIdx + 1).setValue(val);
