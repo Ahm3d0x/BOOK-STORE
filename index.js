@@ -1,5 +1,5 @@
 // 🔴 تأكد من أن رابط الـ API هو نفسه الرابط الفعال لديك
-const API_URL = 'https://script.google.com/macros/s/AKfycbwPdDA1cBDy9DLH06YnoU2q2jMlHGXN_iC3f8qyX8Q43VeY6ml-87dYOUS8ov0EEtwr/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxFiBZ0oPnKlsG4zDtxK9XMSJ1zPy-7Kz-4xdmgxj16Asn60pCzwMhS_c3jXuzjSAD8/exec';
 let appState = {
     books: [],
     settings: {},
