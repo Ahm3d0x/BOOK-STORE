@@ -1,5 +1,5 @@
 // 🔴 تأكد من استبدال هذا الرابط بالرابط الجديد الذي ستحصل عليه من الخطوة السابقة
-const API_URL = 'https://script.google.com/macros/s/AKfycbzfOXr12LT0cDOyvHntR3cPBTVFXVaOMnamUBsU0bdOHtGFJFue6LsPDav1r0_tGO8/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwPdDA1cBDy9DLH06YnoU2q2jMlHGXN_iC3f8qyX8Q43VeY6ml-87dYOUS8ov0EEtwr/exec';
 
 
 // === Global Variables ===
@@ -108,7 +108,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
+// [admin.js] دالة لفحص الرابط وفتح الاوردر تلقائياً
+function checkAdminUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    
+    if (orderId) {
+        // ننتظر قليلاً للتأكد أن الجدول تم رسمه
+        setTimeout(() => {
+            const orderExists = allOrdersData.find(o => String(o.order_id) === String(orderId));
+            if (orderExists) {
+                viewOrderDetails(orderId);
+                // مسح الباراميتر من الرابط عشان لو عملت ريفرش ميفضلش يفتح
+                window.history.pushState({}, document.title, window.location.pathname);
+            } else {
+                showToast('الطلب غير موجود في القائمة الحالية', 'error');
+            }
+        }, 500);
+    }
+}
 function switchTab(tabId) {
     document.querySelectorAll('.admin-section').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById('tab-' + tabId);
@@ -646,6 +664,7 @@ async function loadOrders() {
         const orders = await res.json();
         allOrdersData = orders;
         renderOrders(allOrdersData);
+        checkAdminUrlParams();
     } catch(err) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-400 p-8">فشل تحميل الطلبات</td></tr>';
     }
